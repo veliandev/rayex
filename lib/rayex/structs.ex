@@ -397,19 +397,52 @@ end
 # XXX: ? https://github.com/raysan5/raylib/blob/master/src/raylib.h#L428
 defmodule Rayex.Structs.RAudioBuffer do
   @moduledoc "RAudioBuffer"
-  @enforce_keys ~w[]a
-  defstruct ~w[]a
+  @enforce_keys ~w[callback processor volume pitch pan playing paused looping
+  usage is_sub_buffer_processed size_in_frames frame_cursor_pos frames_processed data next prev]a
+  defstruct ~w[callback processor volume pitch pan playing paused looping
+  usage is_sub_buffer_processed size_in_frames frame_cursor_pos frames_processed data next prev]a
 
-  @type t :: %__MODULE__{}
+  @type t :: %__MODULE__{
+    # converter: payload,
+    callback: binary(),
+    processor: [Rayex.Structs.RAudioProcessor.t()],
+    volume: float,
+    pitch: float,
+    pan: float,
+    playing: boolean,
+    paused: boolean,
+    looping: boolean,
+    usage: integer,
+    is_sub_buffer_processed: [boolean],
+    size_in_frames: integer,
+    frame_cursor_pos: integer,
+    frames_processed: integer,
+    data: binary(),
+    next: [Rayex.Structs.RAudioBuffer.t()],
+    prev: [Rayex.Structs.RAudioBuffer.t()]
+  }
+end
+
+defmodule Rayex.Structs.RAudioProcessor do
+  @moduledoc "RAudioBuffer"
+  @enforce_keys ~w[process next prev]a
+  defstruct ~w[process next prev]a
+
+  @type t :: %__MODULE__{
+    process: binary(),
+    next: [Rayex.Structs.RAudioProcessor.t()],
+    prev: [Rayex.Structs.RAudioProcessor.t()]
+  }
 end
 
 defmodule Rayex.Structs.AudioStream do
   @moduledoc "AudioStream"
-  @enforce_keys ~w[buffer sample_rate sample_size channels]a
-  defstruct ~w[buffer sample_rate sample_size channels]a
+  @enforce_keys ~w[buffer processor sample_rate sample_size channels]a
+  defstruct ~w[buffer processor sample_rate sample_size channels]a
 
   @type t :: %__MODULE__{
           buffer: [Rayex.Structs.RAudioBuffer.t()],
+          processor: [Rayex.Structs.RAudioProcessor.t()],
           sample_rate: non_neg_integer(),
           sample_size: non_neg_integer(),
           channels: non_neg_integer()

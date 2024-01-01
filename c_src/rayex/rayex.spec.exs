@@ -28,13 +28,13 @@ spec toggle_fullscreen() :: :ok :: label
 # Cursor-related functions
 
 # Drawing-related functions
-spec clear_background(color :: color) :: :ok :: label
-spec begin_drawing() :: :ok :: label
-spec end_drawing() :: :ok :: label
-spec begin_mode_2d(camera_2d :: camera_2d) :: :ok :: label
-spec end_mode_2d() :: :ok :: label
-spec begin_mode_3d(camera_3d :: camera_3d) :: :ok :: label
-spec end_mode_3d() :: :ok :: label
+# spec clear_background(color :: color) :: :ok :: label
+# spec begin_drawing() :: :ok :: label
+# spec end_drawing() :: :ok :: label
+# spec begin_mode_2d(camera_2d :: camera_2d) :: :ok :: label
+# spec end_mode_2d() :: :ok :: label
+# spec begin_mode_3d(camera_3d :: camera_3d) :: :ok :: label
+# spec end_mode_3d() :: :ok :: label
 
 # VR stereo config functions for VR simulator
 
@@ -42,13 +42,13 @@ spec end_mode_3d() :: :ok :: label
 # NOTE: Shader functionality is not available on OpenGL 1.1
 
 # Screen-space-related functions
-spec get_mouse_ray(mouse_position :: vector2, camera :: camera_3d) :: ray :: ray
+# spec get_mouse_ray(mouse_position :: vector2, camera :: camera_3d) :: ray :: ray
 
 # Timing-related functions
-spec set_target_fps(fps :: int) :: :ok :: label
-spec get_fps() :: fps :: int
-spec get_frame_time() :: delta :: float
-spec get_time() :: time_from_start :: float
+# spec set_target_fps(fps :: int) :: :ok :: label
+# spec get_fps() :: fps :: int
+# spec get_frame_time() :: delta :: float
+# spec get_time() :: time_from_start :: float
 
 # Misc. functions
 
@@ -68,32 +68,32 @@ spec get_time() :: time_from_start :: float
 # Input-related functions: gamepads
 
 # Input-related functions: mouse
-spec is_mouse_button_pressed(button :: int) :: result :: bool
-spec is_mouse_button_down(button :: int) :: result :: bool
-spec is_mouse_button_released(button :: int) :: result :: bool
-spec is_mouse_button_up(button :: int) :: result :: bool
-spec get_mouse_position() :: xy :: vector2
+# spec is_mouse_button_pressed(button :: int) :: result :: bool
+# spec is_mouse_button_down(button :: int) :: result :: bool
+# spec is_mouse_button_released(button :: int) :: result :: bool
+# spec is_mouse_button_up(button :: int) :: result :: bool
+# spec get_mouse_position() :: xy :: vector2
 
 # Input-related functions: touch
 
 # Gestures and Touch Handling Functions (Module: rgestures)
 
 # Camera System Functions (Module: rcamera)
-spec set_camera_mode(camera :: camera_3d, mode :: int) :: camera_id :: ulong
-spec update_camera(camera :: camera_3d) :: camera :: camera_3d
+# spec update_camera(camera :: camera_3d, mode :: int) :: :ok :: label
+# spec update_camera_pro(camera :: camera_3d, movement :: vector3, rotation :: vector3, zoom :: float) :: :ok :: label
 
-spec set_camera_pan_control(key_pan :: int) :: :ok :: label
-spec set_camera_alt_control(key_alt :: int) :: :ok :: label
-spec set_camera_smooth_zoom_control(key_smooth_zoom :: int) :: :ok :: label
+# spec set_camera_pan_control(key_pan :: int) :: :ok :: label
+# spec set_camera_alt_control(key_alt :: int) :: :ok :: label
+# spec set_camera_smooth_zoom_control(key_smooth_zoom :: int) :: :ok :: label
 
-spec set_camera_move_controls(
-       key_front :: int,
-       key_back :: int,
-       key_right :: int,
-       key_left :: int,
-       key_up :: int,
-       key_down :: int
-     ) :: :ok :: label
+# spec set_camera_move_controls(
+#        key_front :: int,
+#        key_back :: int,
+#        key_right :: int,
+#        key_left :: int,
+#        key_up :: int,
+#        key_down :: int
+#      ) :: :ok :: label
 
 ##########
 # SHAPES #
@@ -102,21 +102,21 @@ spec set_camera_move_controls(
 # Set texture and rectangle to be used on shapes drawing
 # NOTE: It can be useful when using basic shapes and one single font,
 # defining a font char white rectangle would allow drawing everything in a single draw call
-spec set_shapes_texture(texture :: texture_2d, source :: rectangle) :: :ok :: label
+# spec set_shapes_texture(texture :: texture_2d, source :: rectangle) :: :ok :: label
 
 # Basic shapes drawing functions
-spec draw_pixel(x :: int, y :: int, color :: color) :: :ok :: label
+# spec draw_pixel(x :: int, y :: int, color :: color) :: :ok :: label
 
-spec draw_line(start_x :: int, start_y :: int, end_x :: int, end_y :: int, color :: color) ::
-       :ok :: label
+# spec draw_line(start_x :: int, start_y :: int, end_x :: int, end_y :: int, color :: color) ::
+#        :ok :: label
 
-spec draw_rectangle_rec(rec :: rectangle, color :: color) :: :ok :: label
-spec draw_rectangle_lines_ex(rec :: rectangle, line_thick :: int, color :: color) :: :ok :: label
-spec draw_triangle(v1 :: vector2, v2 :: vector2, v3 :: vector2, color :: color) :: :ok :: label
+# spec draw_rectangle_rec(rec :: rectangle, color :: color) :: :ok :: label
+# spec draw_rectangle_lines_ex(rec :: rectangle, line_thick :: int, color :: color) :: :ok :: label
+# spec draw_triangle(v1 :: vector2, v2 :: vector2, v3 :: vector2, color :: color) :: :ok :: label
 
 # Basic shapes collision detection functions
-spec check_collision_point_rec(point :: vector2, rec :: rectangle) :: result :: bool
-spec get_ray_collision_box(ray :: ray, box :: bounding_box) :: ray_collision :: ray_collision
+# spec check_collision_point_rec(point :: vector2, rec :: rectangle) :: result :: bool
+# spec get_ray_collision_box(ray :: ray, box :: bounding_box) :: ray_collision :: ray_collision
 
 ############
 # TEXTURES #
@@ -148,16 +148,16 @@ spec get_ray_collision_box(ray :: ray, box :: bounding_box) :: ray_collision :: 
 # Font loading/unloading functions
 
 # Text drawing functions
-spec draw_fps(pos_x :: int, pos_y :: int) :: :ok :: label
+# spec draw_fps(pos_x :: int, pos_y :: int) :: :ok :: label
 
-spec draw_text(text :: string, pos_x :: int, pos_y :: int, font_size :: int, color :: color) ::
-       :ok :: label
+# spec draw_text(text :: string, pos_x :: int, pos_y :: int, font_size :: int, color :: color) ::
+#        :ok :: label
 
 # Text misc. functions
 
 # Text codepoints management functions (unicode characters)
 
-# Text strings management functions (no utf8 strings, only byte chars)         
+# Text strings management functions (no utf8 strings, only byte chars)
 # NOTE: Some strings allocate memory internally for returned strings, just be careful!
 
 ##########
@@ -165,24 +165,24 @@ spec draw_text(text :: string, pos_x :: int, pos_y :: int, font_size :: int, col
 ##########
 
 # Basic geometric 3D shapes drawing functions
-spec draw_cube(
-       position :: vector3,
-       width :: float,
-       height :: float,
-       length :: float,
-       color :: color
-     ) :: :ok :: label
+# spec draw_cube(
+#        position :: vector3,
+#        width :: float,
+#        height :: float,
+#        length :: float,
+#        color :: color
+#      ) :: :ok :: label
 
-spec draw_cube_wires(
-       position :: vector3,
-       width :: float,
-       height :: float,
-       length :: float,
-       color :: color
-     ) :: :ok :: label
+# spec draw_cube_wires(
+#        position :: vector3,
+#        width :: float,
+#        height :: float,
+#        length :: float,
+#        color :: color
+#      ) :: :ok :: label
 
-spec draw_ray(ray :: ray, color :: color) :: :ok :: label
-spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
+# spec draw_ray(ray :: ray, color :: color) :: :ok :: label
+# spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
 
 # Model loading/unloading functions
 
@@ -203,10 +203,17 @@ spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
 #########
 
 # Audio device management functions
+spec init_audio_device() :: :ok :: label
+spec close_audio_device() :: :ok :: label
+spec is_audio_device_ready() :: result :: bool
+spec set_master_volume(volume :: float) :: :ok :: label
+spec get_master_volume() :: volume :: float
 
 # Wave/Sound loading/unloading functions
+spec load_sound(file_name :: string) :: sound :: sound
 
 # Wave/Sound management functions
+spec play_sound(sound :: sound) :: :ok :: label
 
 # Music management functions
 
@@ -466,11 +473,44 @@ type wave :: %Rayex.Structs.Wave{
        data: payload
      }
 
-# FIXME: ? https://github.com/raysan5/raylib/blob/master/src/raylib.h#L428
-type r_audio_buffer :: %Rayex.Structs.RAudioBuffer{}
+type r_audio_processor :: %Rayex.Structs.RAudioProcessor{
+       process: payload,
+       next: [payload],
+       prev: [payload]
+}
+
+type r_audio_buffer :: %Rayex.Structs.RAudioBuffer{
+
+       # converter: payload,
+
+       callback: payload,
+       processor: [r_audio_processor],
+
+       volume: float,
+       pitch: float,
+       pan: float,
+
+       playing: bool,
+       paused: bool,
+       looping: bool,
+       usage: int,
+
+       is_sub_buffer_processed: [bool],
+
+       size_in_frames: unsigned,
+       frame_cursor_pos: unsigned,
+       frames_processed: unsigned,
+
+       data: payload,
+
+       next: [payload],
+       prev: [payload]
+
+       }
 
 type audio_stream :: %Rayex.Structs.AudioStream{
        buffer: [r_audio_buffer],
+       processor: [r_audio_processor],
        sample_rate: unsigned,
        sample_size: unsigned,
        channels: unsigned

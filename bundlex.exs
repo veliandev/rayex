@@ -12,7 +12,7 @@
        rayex: [
          sources: ["rayex.c"],
          interface: [:nif, :cnode],
-         pkg_configs: ["raylib"],
+         libs: ["raylib"],
          preprocessor: Unifex
        ]
      ]

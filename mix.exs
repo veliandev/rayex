@@ -5,7 +5,7 @@ defmodule Rayex.MixProject do
     [
       app: :rayex,
       version: "0.0.2",
-      elixir: "~> 1.12",
+      elixir: "~> 1.16",
       start_permanent: Mix.env() == :prod,
       compilers: [:unifex, :bundlex] ++ Mix.compilers(),
       deps: deps(),
@@ -13,7 +13,6 @@ defmodule Rayex.MixProject do
       # Hex
       name: "Rayex",
       description: "Raylib bindings for Elixir",
-      package: package(),
       # Docs
       docs: fn ->
         {result, _} = Code.eval_file("docs.exs")
@@ -37,18 +36,7 @@ defmodule Rayex.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       # Deps
-      {:unifex, "~> 1.0.0"},
-      {:bundlex, "~> 1.0.0"}
-    ]
-  end
-
-  defp package do
-    [
-      maintainers: ["Shiryel"],
-      licenses: ["Apache-2.0"],
-      links: %{"GitHub" => "https://github.com/shiryel/rayex"},
-      files:
-        ~w(.formatter.exs docs.exs README.md mix.exs bundlex.exs c_src/rayex/rayex.c c_src/rayex/rayex.h c_src/rayex/rayex.spec.exs lib)
+      {:unifex,  "~> 1.1"}
     ]
   end
 end
