@@ -473,6 +473,122 @@ type wave :: %Rayex.Structs.Wave{
        data: payload
      }
 
+# Miniaudio definitions
+type e_ma_channel_converter_weights :: %Rayex.Structs.MiniaudioChannelConverterWeights{
+       f32: [float],
+       s16: [int]
+}
+
+type e_ma_channel_converter :: %Rayex.Structs.MiniaudioChannelConverter{
+       format: int,
+       channels_in: unsigned,
+       channels_out: unsigned,
+       mixing_mode: int,
+       conversion_path: int,
+       channel_map_in: [unsigned],
+       channel_map_out: [unsigned],
+       shuffle_table: [unsigned],
+       weights: e_ma_channel_converter_weights,
+       owns_heap: bool,
+       heap: [payload]
+}
+
+type e_ma_biquad_coefficient :: %Rayex.Structs.MiniaudioBiquadCoefficient{
+       f32: float,
+       s32: int
+}
+
+type e_ma_biquad :: %Rayex.Structs.MiniaudioBiquad{
+       format: int,
+       channels: unsigned,
+       b0: e_ma_biquad_coefficient,
+       b1: e_ma_biquad_coefficient,
+       b2: e_ma_biquad_coefficient,
+       a1: e_ma_biquad_coefficient,
+       a2: e_ma_biquad_coefficient,
+       pR1: [e_ma_biquad_coefficient],
+       pR2: [e_ma_biquad_coefficient],
+       heap: [payload],
+       owns_heap: bool
+}
+
+type e_ma_lpf1 :: %Rayex.Structs.MiniaudioLpf1{
+       format: int,
+       channels: unsigned,
+       a: e_ma_biquad_coefficient,
+       pR1: [e_ma_biquad_coefficient],
+       heap: [payload],
+       owns_heap: bool
+}
+
+type e_ma_lpf :: %Rayex.Structs.MiniaudioLpf{
+       format: int,
+       channels: unsigned,
+       sample_rate: unsigned,
+       lpf1_count: unsigned,
+       lpf2_count: unsigned,
+       lpf1: e_ma_lpf1,
+       lpf2: e_ma_biquad,
+       heap: [payload],
+       owns_heap: bool
+}
+
+type e_ma_linear_resampler_config :: %Rayex.Structs.MiniaudioLinearResamplerConfig{
+       format: int,
+       channels: unsigned,
+       sample_rate_in: unsigned,
+       sample_rate_out: unsigned,
+       lpf_order: unsigned,
+       lpf_nyquist_factor: float
+}
+
+
+type e_ma_linear_resampler :: %Rayex.Structs.MiniaudioLinearResampler{
+       config: e_ma_linear_resampler_config,
+       in_advance_int: unsigned,
+       in_advance_frac: unsigned,
+       in_time_int: unsigned,
+       in_time_frac: unsigned,
+       x0: e_ma_channel_converter_weights,
+       x1: e_ma_channel_converter_weights,
+       lpf: e_ma_lpf,
+       owns_heap: bool,
+       heap: [payload]
+}
+
+type e_ma_resampler :: %Rayex.Structs.MiniaudioResampler{
+       resampling_backend: [payload],
+       resampling_backend_vtable: [payload],
+       backend_user_data: [payload],
+       format: int,
+       channels: unsigned,
+       sample_rate_in: unsigned,
+       sample_rate_out: unsigned,
+       linear: e_ma_linear_resampler,
+       owns_heap: bool,
+       heap: [payload]
+}
+
+type e_ma_data_converter :: %Rayex.Structs.MiniaudioDataConverter{
+       format_in: int,
+       format_out: int,
+       channels_in: unsigned,
+       channels_out: unsigned,
+       sample_rate_in: unsigned,
+       sample_rate_out: unsigned,
+       dither_mode: int,
+       execution_path: int,
+       channel_converter: e_ma_channel_converter,
+       resampler: e_ma_resampler,
+       has_pre_format_conversion: bool,
+       has_post_format_conversion: bool,
+       has_channel_converter: bool,
+       has_resampler: bool,
+       is_passthrough: bool,
+       owns_heap: bool,
+       heap: [payload]
+}
+
 type r_audio_processor :: %Rayex.Structs.RAudioProcessor{
        process: payload,
        next: [payload],
@@ -480,32 +596,23 @@ type r_audio_processor :: %Rayex.Structs.RAudioProcessor{
 }
 
 type r_audio_buffer :: %Rayex.Structs.RAudioBuffer{
-
-       # converter: payload,
-
+       converter: e_ma_data_converter,
        callback: payload,
        processor: [r_audio_processor],
-
        volume: float,
        pitch: float,
        pan: float,
-
        playing: bool,
        paused: bool,
        looping: bool,
        usage: int,
-
        is_sub_buffer_processed: [bool],
-
        size_in_frames: unsigned,
        frame_cursor_pos: unsigned,
        frames_processed: unsigned,
-
        data: payload,
-
        next: [payload],
        prev: [payload]
-
        }
 
 type audio_stream :: %Rayex.Structs.AudioStream{
@@ -552,3 +659,27 @@ type vr_stereo_config :: %Rayex.Structs.VrStereoConfig{
        scale: [float],
        scale_in: [float]
      }
+
+
+# typedef struct
+# {
+#     ma_format formatIn;
+#     ma_format formatOut;
+#     ma_uint32 channelsIn;
+#     ma_uint32 channelsOut;
+#     ma_uint32 sampleRateIn;
+#     ma_uint32 sampleRateOut;
+#     ma_dither_mode ditherMode;
+#     ma_data_converter_execution_path executionPath; /* The execution path the data converter will follow when processing. */
+#     ma_channel_converter channelConverter;
+#     ma_resampler resampler;
+#     ma_bool8 hasPreFormatConversion;
+#     ma_bool8 hasPostFormatConversion;
+#     ma_bool8 hasChannelConverter;
+#     ma_bool8 hasResampler;
+#     ma_bool8 isPassthrough;
+
+#     /* Memory management. */
+#     ma_bool8 _ownsHeap;
+#     void* _pHeap;
+# } ma_data_converter;

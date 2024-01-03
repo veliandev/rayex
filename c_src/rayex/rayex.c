@@ -1,5 +1,44 @@
 #include "rayex.h"
+#include "miniaudio.h"
 #include <raylib.h>
+
+/***********
+ * STRUCTS *
+ ***********/
+// Audio buffer struct
+struct rAudioBuffer {
+    ma_data_converter converter;    // Audio data converter
+
+    AudioCallback callback;         // Audio buffer callback for buffer filling on audio threads
+    rAudioProcessor *processor;     // Audio processor
+
+    float volume;                   // Audio buffer volume
+    float pitch;                    // Audio buffer pitch
+    float pan;                      // Audio buffer pan (0.0f to 1.0f)
+
+    bool playing;                   // Audio buffer state: AUDIO_PLAYING
+    bool paused;                    // Audio buffer state: AUDIO_PAUSED
+    bool looping;                   // Audio buffer looping, default to true for AudioStreams
+    int usage;                      // Audio buffer usage mode: STATIC or STREAM
+
+    bool isSubBufferProcessed[2];   // SubBuffer processed (virtual double buffer)
+    unsigned int sizeInFrames;      // Total buffer size in frames
+    unsigned int frameCursorPos;    // Frame cursor position
+    unsigned int framesProcessed;   // Total frames processed in this buffer (required for play timing)
+
+    unsigned char *data;            // Data buffer, on music stream keeps filling
+
+    rAudioBuffer *next;             // Next audio buffer on the list
+    rAudioBuffer *prev;             // Previous audio buffer on the list
+};
+
+// Audio processor struct
+// NOTE: Useful to apply effects to an AudioBuffer
+struct rAudioProcessor {
+    AudioCallback process;          // Processor callback function
+    rAudioProcessor *next;          // Next audio processor on the list
+    rAudioProcessor *prev;          // Previous audio processor on the list
+};
 
 // NOTE: "E_" when converting back to NIF struct
 
@@ -58,54 +97,202 @@
 #define E_RECTANGLE(r)                                                         \
   ((rectangle){.x = r.x, .y = r.y, .width = r.width, .height = r.height})
 
-#define R_AUDIO_BUFFER(b) \
-  ((rAudioBuffer){.converter = b.converter, \
-  .callback = b.callback, \
-  .processor = b.processor, \
-  .volume = b.volume, \
-  .pitch = b.pitch, \
-  .pan = b.pan, \
-  .playing = b.playing, \
-  .paused = b.paused, \
-  .looping = b.looping, \
-  .usage = b.usage, \
-  .isSubBufferProcessed = b.is_sub_buffer_processed, \
-  .sizeInFrames = b.size_in_frames, \
-  .frameCursorPos = b.frame_cursor_pos, \
-  .framesProcessed = b.frames_processed, \
-  .data = b.data, \
-  .next = b.next, \
-  .prev = b.prev })
-#define E_R_AUDIO_BUFFER(b) \
-  ((r_audio_buffer){ \
-  .callback = b.callback, \
-  .processor = b->processor, \
-  .volume = b.volume, \
-  .pitch = b.pitch, \
-  .pan = b.pan, \
-  .playing = b.playing, \
-  .paused = b.paused, \
-  .looping = b.looping, \
-  .usage = b.usage, \
-  .is_sub_buffer_processed = b.isSubBufferProcessed, \
-  .size_in_frames = b.sizeInFrames, \
-  .frame_cursor_pos = b.frameCursorPos, \
-  .frames_processed = b.framesProcessed, \
-  .data = b.data, \
-  .next = b.next, \
-  .prev = b.prev })
-#define R_AUDIO_PROCESSOR(p) \
-  ((rAudioProcessor){.process = p->process, \
-  .next = p->next, \
-  .prev = p->prev })
-#define E_R_AUDIO_PROCESSOR(p) \
-  ((r_audio_processor){.process = p.process, \
-  .next = p.next, \
-  .prev = p.prev })
+#define E_MA_CHANNEL_CONVERTER_WEIGHTS(w) \
+  ((e_ma_channel_converter_weights){ \
+  .f32 = w.f32, \
+  .s16 = w.s16, \
+  })
+
+#define E_MA_CHANNEL_CONVERTER(c) \
+  ((e_ma_channel_converter){ \
+  .format = c.format,   \
+  .channels_in = c.channelsIn,    \
+  .channels_out = c.channelsOut,   \
+  .mixing_mode = c.mixingMode,    \
+  .conversion_path = c.conversionPath,    \
+  .channel_map_in = c.pChannelMapIn,   \
+  .channel_map_out = c.pChannelMapOut,    \
+  .shuffle_table = c.pShuffleTable,    \
+  .weights = E_MA_CHANNEL_CONVERTER_WEIGHTS(c.weights),    \
+  .owns_heap = c._ownsHeap,    \
+  .heap = c._pHeap,   \
+  })
+
+#define E_MA_LINEAR_RESAMPLER_CONFIG(c) \
+  ((e_ma_linear_resampler_config){  \
+  .format = c.format,   \
+  .channels = c.channels,   \
+  .sample_rate_in = c.sampleRateIn,   \
+  .sample_rate_out = c.sampleRateOut,    \
+  .lpf_order = c.lpfOrder,    \
+  .lpf_nyquist_factor = c.lpfNyquistFactor,   \
+  })
+
+#define E_MA_BIQUAD_COEFFICIENT(bqc) \
+((e_ma_biquad_coefficient){ \
+  .f32 = bqc.f32, \
+  .s32 = bqc.s32  \
+})
+
+#define E_MA_BIQUAD_COEFFICIENT_POINTER(bqc) \
+((e_ma_biquad_coefficient){ \
+  .f32 = bqc->f32, \
+  .s32 = bqc->s32  \
+})
+
+#define E_MA_BIQUAD(bq) \
+((e_ma_biquad){ \
+  .format = bq.format,\
+  .channels = bq.channels,\
+  .b0 = E_MA_BIQUAD_COEFFICIENT(bq.b0),\
+  .b1 = E_MA_BIQUAD_COEFFICIENT(bq.b1),\
+  .b2 = E_MA_BIQUAD_COEFFICIENT(bq.b2),\
+  .a1 = E_MA_BIQUAD_COEFFICIENT(bq.a1),\
+  .a2 = E_MA_BIQUAD_COEFFICIENT(bq.a2),\
+  .pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(bq.pR1),\
+  .pR2 = E_MA_BIQUAD_COEFFICIENT_POINTER(bq.pR2),\
+  .heap = bq._pHeap,\
+  .owns_heap = bq._ownsHeap\
+})
+
+#define E_MA_LPF1(lpf1) \
+((e_ma_lpf1){ \
+  .format = lpf1->format,\
+  .channels = lpf1->channels,\
+  .a = lpf1->a,\
+  .pR1 = lpf1->pR1, \
+  .heap = lpf1->_pHeap,\
+  .owns_heap = lpf1->_ownsHeap,\
+})
+
+#define E_MA_LPF(lpf) \
+((e_ma_lpf){  \
+  .format = lpf.format, \
+  .channels = lpf.channels, \
+  .sample_rate = lpf.sampleRate, \
+  .lpf1_count = lpf.lpf1Count, \
+  .lpf2_count = lpf.lpf2Count, \
+  .lpf1 = E_MA_LPF1(lpf.pLPF1), \
+  .lpf2 = E_MA_BIQUAD(lpf.pLPF2->bq), \
+  .heap = lpf._pHeap, \
+  .owns_heap = lpf._ownsHeap \
+})
+
+#define E_MA_LINEAR_RESAMPLER(r) \
+  ((e_ma_linear_resampler){ \
+    .config = E_MA_LINEAR_RESAMPLER_CONFIG(r.config), \
+    .in_advance_int = r.inAdvanceInt, \
+    .in_advance_frac = r.inAdvanceFrac, \
+    .in_time_int = r.inTimeInt, \
+    .in_time_frac = r.inTimeFrac, \
+    .x0 = E_MA_CHANNEL_CONVERTER_WEIGHTS(r.x0), \
+    .x1 = E_MA_CHANNEL_CONVERTER_WEIGHTS(r.x1), \
+    .lpf = E_MA_LPF(r.lpf), \
+    .owns_heap = r._ownsHeap, \
+    .heap = r._pHeap, \
+  })
+
+#define E_MA_RESAMPLER(r) \
+  ((e_ma_resampler){      \
+    .resampling_backend = r.pBackend,\
+    .resampling_backend_vtable = r.pBackendVTable, \
+    .backend_user_data = r.pBackendUserData, \
+    .format = r.format, \
+    .channels = r.channels, \
+    .sample_rate_in = r.sampleRateIn, \
+    .sample_rate_out = r.sampleRateOut,\
+    .linear = E_MA_LINEAR_RESAMPLER(r.state.linear), \
+    .owns_heap = r._ownsHeap, \
+    .heap = r._pHeap, \
+  })
+
+#define E_MA_DATA_CONVERTER(c)  \
+  ((e_ma_data_converter){       \
+  .format_in = c.formatIn,      \
+  .format_out = c.formatOut,    \
+  .channels_in = c.channelsIn,   \
+  .channels_out = c.channelsOut,            \
+  .sample_rate_in = c.sampleRateIn,          \
+  .sample_rate_out = c.sampleRateOut, \
+  .dither_mode = c.ditherMode, \
+  .execution_path = c.executionPath,\
+  .channel_converter = E_MA_CHANNEL_CONVERTER(c.channelConverter),\
+  .resampler = E_MA_RESAMPLER(c.resampler),\
+  .has_pre_format_conversion = c.hasPreFormatConversion,\
+  .has_post_format_conversion = c.hasPostFormatConversion,\
+  .has_channel_converter = c.hasChannelConverter,\
+  .has_resampler = c.hasResampler,\
+  .is_passthrough = c.isPassthrough,\
+  .owns_heap = c._ownsHeap,\
+  .heap = c._pHeap\
+  })
+
+// rAudioBuffer* R_AUDIO_BUFFER(r_audio_buffer* b)
+// {
+//   rAudioBuffer* rab = (rAudioBuffer*)malloc(sizeof(rAudioBuffer));
+//   rab->converter = b->converter;
+//   rab->callback = b->callback;
+//   rab->processor = b->processor;
+//   rab->volume = b->volume;
+//   rab->pitch = b->pitch;
+//   rab->pan = b->pan;
+//   rab->playing = b->playing;
+//   rab->paused = b->paused;
+//   rab->looping = b->looping;
+//   rab->usage = b->usage;
+//   rab->isSubBufferProcessed[0] = false;
+//   rab->isSubBufferProcessed[1] = false;
+//   rab->sizeInFrames = b->size_in_frames;
+//   rab->frameCursorPos = b->frame_cursor_pos;
+//   rab->framesProcessed = b->frames_processed;
+//   rab->data = b->data;
+//   rab->next = b->next;
+//   rab->prev = b->prev;
+//   return rab;
+// }
+r_audio_buffer* E_R_AUDIO_BUFFER(rAudioBuffer* b)
+{
+  r_audio_buffer* rab = (r_audio_buffer*)malloc(sizeof(r_audio_buffer));
+  rab->converter = E_MA_DATA_CONVERTER(b->converter);
+  rab->callback = b->callback;
+  // rab->processor = b->processor;
+  rab->volume = b->volume;
+  rab->pitch = b->pitch;
+  rab->pan = b->pan;
+  rab->playing = b->playing;
+  rab->paused = b->paused;
+  rab->looping = b->looping;
+  rab->usage = b->usage;
+  rab->is_sub_buffer_processed = b->isSubBufferProcessed;
+  rab->size_in_frames = b->sizeInFrames;
+  rab->frame_cursor_pos = b->frameCursorPos;
+  rab->frames_processed = b->framesProcessed;
+  rab->data = b->data;
+  rab->next = b->next;
+  rab->prev = b->prev;
+  return rab;
+}
+
+// rAudioProcessor* R_AUDIO_PROCESSOR(r_audio_processor* p)
+// {
+//   rAudioProcessor* rap = (rAudioProcessor*)malloc(sizeof(rAudioProcessor));
+//   rap->process = p->process;
+//   rap->next = p->next;
+//   rap->prev = p->prev;
+//   return rap;
+// }
+r_audio_processor* E_R_AUDIO_PROCESSOR(rAudioProcessor* p)
+{
+  r_audio_processor* rap = (r_audio_processor*)malloc(sizeof(r_audio_processor));
+  rap->process = p->process;
+  rap->next = p->next;
+  rap->prev = p->prev;
+  return rap;
+}
 
 #define R_AUDIO_STREAM(s) \
-  ((AudioStream){.buffer = s.buffer, \
-  .processor = s.processor, \
+  ((AudioStream){.buffer = R_AUDIO_BUFFER(s.buffer), \
+  .processor = R_AUDIO_PROCESSOR(s.processor), \
   .sampleRate = s.sample_rate, \
   .sampleSize = s.sample_size, \
   .channels = s.channels})
@@ -623,7 +810,10 @@ UNIFEX_TERM get_master_volume(UnifexEnv *env) {
 // Wave/Sound loading/unloading functions
 UNIFEX_TERM load_sound(UnifexEnv *env, char *fileName) {
   Sound newSound = LoadSound(fileName);
+  // PlaySound(newSound);
+  // rAudioBuffer* buffer = LoadAudioBuffer(SAMPLE_FORMAT, 2, SAMPLE_FORMAT, newSound.frameCount, 0);
   sound res = E_SOUND(newSound);
+  // res.stream.buffer = buffer;
   // rAudioBuffer buffer{};
 
   return load_sound_result(env, res);
@@ -631,7 +821,7 @@ UNIFEX_TERM load_sound(UnifexEnv *env, char *fileName) {
 
 // Wave/Sound management functions
 UNIFEX_TERM play_sound(UnifexEnv *env, sound s) {
-  Sound newSound = SOUND(&s);
+  Sound newSound = SOUND(s);
   PlaySound(newSound);
   return play_sound_result_ok(env);
 }
@@ -640,6 +830,3 @@ UNIFEX_TERM play_sound(UnifexEnv *env, sound s) {
 
 // AudioStream management functions
 
-/***********
- * STRUCTS *
- ***********/
