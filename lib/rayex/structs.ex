@@ -531,9 +531,9 @@ end
 
 defmodule Rayex.Structs.MiniaudioChannelConverter do
   @moduledoc "MiniaudioChannelConverter"
-  @enforce_keys ~w[format channels_in channels_out mixing_mode channel_conversion_path
+  @enforce_keys ~w[format channels_in channels_out mixing_mode conversion_path
   channel_map_in channel_map_out shuffle_table weights owns_heap heap]a
-  defstruct ~w[format channels_in channels_out mixing_mode channel_conversion_path
+  defstruct ~w[format channels_in channels_out mixing_mode conversion_path
   channel_map_in channel_map_out shuffle_table weights owns_heap heap]a
 
   @type t :: %__MODULE__{
@@ -547,7 +547,7 @@ defmodule Rayex.Structs.MiniaudioChannelConverter do
     shuffle_table: [non_neg_integer()],
     weights: %{f32: float, s16: string},
     owns_heap: boolean(),
-    heap: [payload]
+    heap: [binary()]
   }
   # ma_format format;
   # ma_uint32 channelsIn;
@@ -602,8 +602,8 @@ end
 
 defmodule Rayex.Structs.MiniaudioBiquad do
   @moduledoc "MiniaudioBiquad"
-  @enforce_keys ~w[b0 b1 b2 a1 a2 pR1 pR2 heap owns_heap]a
-  defstruct ~w[b0 b1 b2 a1 a2 pR1 pR2 heap owns_heap]a
+  @enforce_keys ~w[format channels b0 b1 b2 a1 a2 pR1 pR2 heap owns_heap]a
+  defstruct ~w[format channels b0 b1 b2 a1 a2 pR1 pR2 heap owns_heap]a
 
   @type t :: %__MODULE__{
    format: integer,
@@ -615,7 +615,7 @@ defmodule Rayex.Structs.MiniaudioBiquad do
    a2: Rayex.Structs.MiniaudioBiquadCoefficient.t(),
    pR1: [Rayex.Structs.MiniaudioBiquadCoefficient.t()],
    pR2: [Rayex.Structs.MiniaudioBiquadCoefficient.t()],
-   heap: [payload],
+   heap: [binary()],
    owns_heap: boolean()
   }
 
@@ -650,7 +650,7 @@ defmodule Rayex.Structs.MiniaudioLpf1 do
     channels: non_neg_integer(),
     a: Rayex.Structs.MiniaudioBiquadCoefficient.t(),
     pR1: [Rayex.Structs.MiniaudioBiquadCoefficient.t()],
-    heap: [payload],
+    heap: [binary()],
     owns_heap: boolean()
   }
 
@@ -674,9 +674,9 @@ defmodule Rayex.Structs.MiniaudioLpf do
     sample_rate: non_neg_integer(),
     lpf1_count: non_neg_integer(),
     lpf2_count: non_neg_integer(),
-    lpf1: Rayex.Structs.MiniaudioLpf1.t(),
-    lpf2: Rayex.Structs.MiniaudioBiquadCoefficient.t(),
-    heap: [payload],
+    lpf1: [Rayex.Structs.MiniaudioLpf1.t()],
+    lpf2: [Rayex.Structs.MiniaudioBiquadCoefficient.t()],
+    heap: [binary()],
     owns_heap: boolean()
   }
 
@@ -696,10 +696,8 @@ end
 
 defmodule Rayex.Structs.MiniaudioLinearResampler do
   @moduledoc "MiniaudioResampler"
-  @enforce_keys ~w[resampling_backend resampling_backend_vtable backend_user_data format channels
-  sample_rate_in sample_rate_out state owns_heap heap]a
-  defstruct ~w[resampling_backend resampling_backend_vtable backend_user_data format channels
-  sample_rate_in sample_rate_out state owns_heap heap]a
+  @enforce_keys ~w[config in_advance_int in_advance_frac in_time_int in_time_frac x0 x1 lpf owns_heap heap]a
+  defstruct ~w[config in_advance_int in_advance_frac in_time_int in_time_frac x0 x1 lpf owns_heap heap]a
 
   @type t :: %__MODULE__{
     config: Rayex.Structs.MiniaudioLinearResamplerConfig.t(),
@@ -711,7 +709,7 @@ defmodule Rayex.Structs.MiniaudioLinearResampler do
     x1: Rayex.Structs.MiniaudioChannelConverterWeights.t(),
     lpf: Rayex.Structs.MiniaudioLpf.t(),
     owns_heap: boolean(),
-    heap: [payload]
+    heap: [binary()]
   }
   # ma_linear_resampler_config config;
   # ma_uint32 inAdvanceInt;
@@ -738,21 +736,21 @@ end
 defmodule Rayex.Structs.MiniaudioResampler do
   @moduledoc "MiniaudioResampler"
   @enforce_keys ~w[resampling_backend resampling_backend_vtable backend_user_data format channels
-  sample_rate_in sample_rate_out state owns_heap heap]a
+  sample_rate_in sample_rate_out linear owns_heap heap]a
   defstruct ~w[resampling_backend resampling_backend_vtable backend_user_data format channels
-  sample_rate_in sample_rate_out state owns_heap heap]a
+  sample_rate_in sample_rate_out linear owns_heap heap]a
 
   @type t :: %__MODULE__{
-    resampling_backend: [payload],
-    resampling_backend_vtable: [payload],
-    backend_user_data: [payload],
+    resampling_backend: [binary()],
+    resampling_backend_vtable: [binary()],
+    backend_user_data: [binary()],
     format: integer,
     channels: non_neg_integer(),
     sample_rate_in: non_neg_integer(),
     sample_rate_out: non_neg_integer(),
     linear: Rayex.Structs.MiniaudioLinearResampler.t(),
     owns_heap: boolean(),
-    heap: [payload]
+    heap: [binary()]
   }
   # ma_resampling_backend* pBackend;
   # ma_resampling_backend_vtable* pBackendVTable;
@@ -799,7 +797,7 @@ defmodule Rayex.Structs.MiniaudioDataConverter do
     has_resampler: boolean(),
     is_passthrough: boolean(),
     owns_heap: boolean(),
-    heap: [payload]
+    heap: [binary()]
   }
   # ma_format formatIn;
   # ma_format formatOut;

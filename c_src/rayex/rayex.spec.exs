@@ -527,8 +527,8 @@ type e_ma_lpf :: %Rayex.Structs.MiniaudioLpf{
        sample_rate: unsigned,
        lpf1_count: unsigned,
        lpf2_count: unsigned,
-       lpf1: e_ma_lpf1,
-       lpf2: e_ma_biquad,
+       lpf1: [e_ma_lpf1],
+       lpf2: [e_ma_biquad],
        heap: [payload],
        owns_heap: bool
 }
@@ -591,7 +591,7 @@ type e_ma_data_converter :: %Rayex.Structs.MiniaudioDataConverter{
 
 type r_audio_processor :: %Rayex.Structs.RAudioProcessor{
        process: payload,
-       next: [payload],
+       next: [payload], # Fuck
        prev: [payload]
 }
 
@@ -611,7 +611,7 @@ type r_audio_buffer :: %Rayex.Structs.RAudioBuffer{
        frame_cursor_pos: unsigned,
        frames_processed: unsigned,
        data: payload,
-       next: [payload],
+       next: [payload], # Gotta be an r_audio_buffer
        prev: [payload]
        }
 
