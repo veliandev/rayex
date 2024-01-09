@@ -521,6 +521,10 @@ type e_ma_lpf1 :: %Rayex.Structs.MiniaudioLpf1{
        owns_heap: bool
 }
 
+type e_ma_lpf2 :: %Rayex.Structs.MiniaudioLpf2{
+       bq: e_ma_biquad
+}
+
 type e_ma_lpf :: %Rayex.Structs.MiniaudioLpf{
        format: int,
        channels: unsigned,
@@ -528,7 +532,7 @@ type e_ma_lpf :: %Rayex.Structs.MiniaudioLpf{
        lpf1_count: unsigned,
        lpf2_count: unsigned,
        lpf1: [e_ma_lpf1],
-       lpf2: [e_ma_biquad],
+       lpf2: [e_ma_lpf2],
        heap: [payload],
        owns_heap: bool
 }

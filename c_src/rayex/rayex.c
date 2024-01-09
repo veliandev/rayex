@@ -99,7 +99,7 @@ struct rAudioProcessor {
 
 e_ma_channel_converter_weights E_MA_CHANNEL_CONVERTER_WEIGHTS(float** f32, int** s16)
 {
-  e_ma_channel_converter_weights result;// = e_ma_channel_converter_weights();
+  e_ma_channel_converter_weights result;
   result.f32 = f32;
   result.s16 = s16;
   return result;
@@ -107,7 +107,7 @@ e_ma_channel_converter_weights E_MA_CHANNEL_CONVERTER_WEIGHTS(float** f32, int**
 
 e_ma_channel_converter E_MA_CHANNEL_CONVERTER(ma_channel_converter c)
 {
-  e_ma_channel_converter result;// = e_ma_channel_converter();
+  e_ma_channel_converter result;
   result.format = c.format;
   result.channels_in = c.channelsIn;
   result.channels_out = c.channelsOut;
@@ -117,7 +117,6 @@ e_ma_channel_converter E_MA_CHANNEL_CONVERTER(ma_channel_converter c)
   result.channel_map_out = c.pChannelMapOut;
   result.shuffle_table = c.pShuffleTable;
   result.weights = E_MA_CHANNEL_CONVERTER_WEIGHTS(c.weights.f32, c.weights.s16); // I fully expect this to error.
-  result.weights.s16 = c.weights.s16;
   result.owns_heap = c._ownsHeap;
   result.heap = c._pHeap;
   return result;
@@ -125,7 +124,7 @@ e_ma_channel_converter E_MA_CHANNEL_CONVERTER(ma_channel_converter c)
 
 e_ma_linear_resampler_config E_MA_LINEAR_RESAMPLER_CONFIG(ma_linear_resampler_config c)
 {
-  e_ma_linear_resampler_config result;// = e_ma_linear_resampler_config();
+  e_ma_linear_resampler_config result;
   result.format = c.format;
   result.channels = c.channels;
   result.sample_rate_in = c.sampleRateIn;
@@ -137,7 +136,7 @@ e_ma_linear_resampler_config E_MA_LINEAR_RESAMPLER_CONFIG(ma_linear_resampler_co
 
 e_ma_biquad_coefficient E_MA_BIQUAD_COEFFICIENT(ma_biquad_coefficient bqc)
 {
-  e_ma_biquad_coefficient result;// = e_ma_biquad_coefficient();
+  e_ma_biquad_coefficient result;
   result.f32 = bqc.f32;
   result.s32 = bqc.s32;
   return result;
@@ -146,63 +145,61 @@ e_ma_biquad_coefficient E_MA_BIQUAD_COEFFICIENT(ma_biquad_coefficient bqc)
 e_ma_biquad_coefficient* E_MA_BIQUAD_COEFFICIENT_POINTER(ma_biquad_coefficient* bqc)
 {
   e_ma_biquad_coefficient* result = (e_ma_biquad_coefficient*)malloc(sizeof(e_ma_biquad_coefficient));
-  result->f32 = bqc->f32;
-  result->s32 = bqc->s32;
+  if(bqc){
+    if(bqc->f32){result->f32 = bqc->f32;}
+    if(bqc->s32){result->s32 = bqc->s32;}
+  }
   return result;
 }
 
-e_ma_biquad* E_MA_BIQUAD(ma_biquad* bq)
+e_ma_biquad E_MA_BIQUAD(ma_biquad bq)
 {
-  e_ma_biquad* result = (e_ma_biquad*)malloc(sizeof(e_ma_biquad));
-  result->format = bq->format;
-  result->channels = bq->channels;
-  result->b0 = E_MA_BIQUAD_COEFFICIENT(bq->b0);
-  result->b1 = E_MA_BIQUAD_COEFFICIENT(bq->b1);
-  result->b2 = E_MA_BIQUAD_COEFFICIENT(bq->b2);
-  result->a1 = E_MA_BIQUAD_COEFFICIENT(bq->a1);
-  result->a2 = E_MA_BIQUAD_COEFFICIENT(bq->a2);
-  result->pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(bq->pR1);
-  result->pR2 = E_MA_BIQUAD_COEFFICIENT_POINTER(bq->pR2);
-  result->heap = bq->_pHeap;
-  result->owns_heap = bq->_ownsHeap;
+  e_ma_biquad result;// = (e_ma_biquad*)malloc(sizeof(e_ma_biquad));
+  result.format = bq.format;
+  result.channels = bq.channels;
+  result.b0 = E_MA_BIQUAD_COEFFICIENT(bq.b0);
+  result.b1 = E_MA_BIQUAD_COEFFICIENT(bq.b1);
+  result.b2 = E_MA_BIQUAD_COEFFICIENT(bq.b2);
+  result.a1 = E_MA_BIQUAD_COEFFICIENT(bq.a1);
+  result.a2 = E_MA_BIQUAD_COEFFICIENT(bq.a2);
+  result.pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(bq.pR1);
+  result.pR2 = E_MA_BIQUAD_COEFFICIENT_POINTER(bq.pR2);
+  result.heap = bq._pHeap;
+  result.owns_heap = bq._ownsHeap;
   return result;
 }
-
-
-// #define E_MA_LPF1(lpf1) \
-// ((e_ma_lpf1){ \
-//   .format = lpf1->format,\
-//   .channels = lpf1->channels,\
-//   .a = E_MA_BIQUAD_COEFFICIENT(lpf1->a),\
-//   .pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(lpf1->pR1), \
-//   .heap = lpf1->_pHeap,\
-//   .owns_heap = lpf1->_ownsHeap,\
-// })
 
 e_ma_lpf1* E_MA_LPF1(ma_lpf1* lpf1)
 {
   e_ma_lpf1* result = (e_ma_lpf1*)malloc(sizeof(e_ma_lpf1));
-  result->format = lpf1->format;
-  result->channels = lpf1->channels;
-  result->a = E_MA_BIQUAD_COEFFICIENT(lpf1->a);
-  result->pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(lpf1->pR1);
-  result->heap = lpf1->_pHeap;
-  result->owns_heap = lpf1->_ownsHeap;
+
+  if(lpf1){
+    result->a = E_MA_BIQUAD_COEFFICIENT(lpf1->a);
+
+    if(lpf1->format){result->format = lpf1->format;}
+    if(lpf1->channels){result->channels = lpf1->channels;}
+    if(lpf1->pR1){result->pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(lpf1->pR1);}
+    if(lpf1->_pHeap){result->heap = lpf1->_pHeap;}
+    if(lpf1->_ownsHeap){result->owns_heap = lpf1->_ownsHeap;}
+  }
+
+  // result->format = lpf1->format;
+  // result->channels = lpf1->channels;
+  // result->a = E_MA_BIQUAD_COEFFICIENT(lpf1->a);
+  // result->pR1 = E_MA_BIQUAD_COEFFICIENT_POINTER(lpf1->pR1);
+  // result->heap = lpf1->_pHeap;
+  // result->owns_heap = lpf1->_ownsHeap;
   return result;
 }
 
-// #define E_MA_LPF(lpf) \
-// ((e_ma_lpf){  \
-//   .format = lpf.format, \
-//   .channels = lpf.channels, \
-//   .sample_rate = lpf.sampleRate, \
-//   .lpf1_count = lpf.lpf1Count, \
-//   .lpf2_count = lpf.lpf2Count, \
-//   .lpf1 = E_MA_LPF1(lpf.pLPF1), \
-//   .lpf2 = E_MA_BIQUAD(lpf.pLPF2->bq), \
-//   .heap = lpf._pHeap, \
-//   .owns_heap = lpf._ownsHeap \
-// })
+e_ma_lpf2* E_MA_LPF2(ma_lpf2* lpf2)
+{
+  e_ma_lpf2* result = (e_ma_lpf2*)malloc(sizeof(e_ma_lpf2));
+  if(lpf2){
+    result->bq = E_MA_BIQUAD(lpf2->bq);
+  }
+  return result;
+}
 
 e_ma_lpf E_MA_LPF(ma_lpf lpf)
 {
@@ -213,25 +210,11 @@ e_ma_lpf E_MA_LPF(ma_lpf lpf)
   result.lpf1_count = lpf.lpf1Count;
   result.lpf2_count = lpf.lpf2Count;
   result.lpf1 = E_MA_LPF1(lpf.pLPF1);
-  result.lpf2 = E_MA_BIQUAD(&lpf.pLPF2->bq);
+  result.lpf2 = E_MA_LPF2(lpf.pLPF2);
   result.heap = lpf._pHeap;
   result.owns_heap = lpf._ownsHeap;
   return result;
 }
-
-// #define E_MA_LINEAR_RESAMPLER(r) \
-//   ((e_ma_linear_resampler){ \
-//     .config = E_MA_LINEAR_RESAMPLER_CONFIG(r.config), \
-//     .in_advance_int = r.inAdvanceInt, \
-//     .in_advance_frac = r.inAdvanceFrac, \
-//     .in_time_int = r.inTimeInt, \
-//     .in_time_frac = r.inTimeFrac, \
-//     .x0 = E_MA_CHANNEL_CONVERTER_WEIGHTS(r.x0), \
-//     .x1 = E_MA_CHANNEL_CONVERTER_WEIGHTS(r.x1), \
-//     .lpf = E_MA_LPF(r.lpf), \
-//     .owns_heap = r._ownsHeap, \
-//     .heap = r._pHeap, \
-//   })
 
 e_ma_linear_resampler E_MA_LINEAR_RESAMPLER(ma_linear_resampler r)
 {
@@ -249,23 +232,9 @@ e_ma_linear_resampler E_MA_LINEAR_RESAMPLER(ma_linear_resampler r)
   return result;
 }
 
-// #define E_MA_RESAMPLER(r) \
-//   ((e_ma_resampler){      \
-//     .resampling_backend = r.pBackend,\
-//     .resampling_backend_vtable = r.pBackendVTable, \
-//     .backend_user_data = r.pBackendUserData, \
-//     .format = r.format, \
-//     .channels = r.channels, \
-//     .sample_rate_in = r.sampleRateIn, \
-//     .sample_rate_out = r.sampleRateOut,\
-//     .linear = E_MA_LINEAR_RESAMPLER(r.state.linear), \
-//     .owns_heap = r._ownsHeap, \
-//     .heap = r._pHeap, \
-//   })
-
 e_ma_resampler E_MA_RESAMPLER(ma_resampler r)
 {
-  e_ma_resampler result;// = e_ma_resampler();
+  e_ma_resampler result;
   result.resampling_backend = r.pBackend;
   result.resampling_backend_vtable = r.pBackendVTable;
   result.backend_user_data = r.pBackendUserData;
@@ -279,30 +248,9 @@ e_ma_resampler E_MA_RESAMPLER(ma_resampler r)
   return result;
 }
 
-// #define E_MA_DATA_CONVERTER(c)  \
-//   ((e_ma_data_converter){       \
-//   .format_in = c.formatIn,      \
-//   .format_out = c.formatOut,    \
-//   .channels_in = c.channelsIn,   \
-//   .channels_out = c.channelsOut,            \
-//   .sample_rate_in = c.sampleRateIn,          \
-//   .sample_rate_out = c.sampleRateOut, \
-//   .dither_mode = c.ditherMode, \
-//   .execution_path = c.executionPath,\
-//   .channel_converter = E_MA_CHANNEL_CONVERTER(c.channelConverter),\
-//   .resampler = E_MA_RESAMPLER(c.resampler),\
-//   .has_pre_format_conversion = c.hasPreFormatConversion,\
-//   .has_post_format_conversion = c.hasPostFormatConversion,\
-//   .has_channel_converter = c.hasChannelConverter,\
-//   .has_resampler = c.hasResampler,\
-//   .is_passthrough = c.isPassthrough,\
-//   .owns_heap = c._ownsHeap,\
-//   .heap = c._pHeap\
-//   })
-
 e_ma_data_converter E_MA_DATA_CONVERTER(ma_data_converter c)
 {
-  e_ma_data_converter result;// = e_ma_data_converter();
+  e_ma_data_converter result;
   result.format_in = c.formatIn;    
   result.format_out = c.formatOut;  
   result.channels_in = c.channelsIn; 
@@ -323,110 +271,57 @@ e_ma_data_converter E_MA_DATA_CONVERTER(ma_data_converter c)
   return result;
 }
 
-// rAudioBuffer* R_AUDIO_BUFFER(r_audio_buffer* b)
-// {
-//   rAudioBuffer* rab = (rAudioBuffer*)malloc(sizeof(rAudioBuffer));
-//   rab->converter = b->converter;
-//   rab->callback = b->callback;
-//   rab->processor = b->processor;
-//   rab->volume = b->volume;
-//   rab->pitch = b->pitch;
-//   rab->pan = b->pan;
-//   rab->playing = b->playing;
-//   rab->paused = b->paused;
-//   rab->looping = b->looping;
-//   rab->usage = b->usage;
-//   rab->isSubBufferProcessed[0] = false;
-//   rab->isSubBufferProcessed[1] = false;
-//   rab->sizeInFrames = b->size_in_frames;
-//   rab->frameCursorPos = b->frame_cursor_pos;
-//   rab->framesProcessed = b->frames_processed;
-//   rab->data = b->data;
-//   rab->next = b->next;
-//   rab->prev = b->prev;
-//   return rab;
-// }
-
 r_audio_buffer* E_R_AUDIO_BUFFER(rAudioBuffer* b)
 {
-  r_audio_buffer* result = (r_audio_buffer*)malloc(sizeof(r_audio_buffer));
-  result->converter = E_MA_DATA_CONVERTER(b->converter);
-  result->callback = b->callback;
-  result->processor = b->processor;
-  result->volume = b->volume;
-  result->pitch = b->pitch;
-  result->pan = b->pan;
-  result->playing = b->playing;
-  result->paused = b->paused;
-  result->looping = b->looping;
-  result->usage = b->usage;
-  result->is_sub_buffer_processed = b->isSubBufferProcessed;
-  result->size_in_frames = b->sizeInFrames;
-  result->frame_cursor_pos = b->frameCursorPos;
-  result->frames_processed = b->framesProcessed;
-  result->data = b->data;
-  result->next = b->next;
-  result->prev = b->prev;
+  r_audio_buffer *result = malloc(sizeof(r_audio_buffer));
+  if(b){
+    
+    result->converter = E_MA_DATA_CONVERTER(b->converter);
+
+    if(b->callback){result->callback = b->callback;}
+    if(b->processor){result->processor = b->processor;}
+    if(b->volume){result->volume = b->volume;}
+    if(b->pitch){result->pitch = b->pitch;}
+    if(b->pan){result->pan = b->pan;}
+    if(b->playing){result->playing = b->playing;}
+    if(b->paused){result->paused = b->paused;}
+    if(b->looping){result->looping = b->looping;}
+    if(b->usage){result->usage = b->usage;}
+    if(b->isSubBufferProcessed){result->is_sub_buffer_processed = b->isSubBufferProcessed;}
+    if(b->sizeInFrames){result->size_in_frames = b->sizeInFrames;}
+    if(b->frameCursorPos){result->frame_cursor_pos = b->frameCursorPos;}
+    if(b->framesProcessed){result->frames_processed = b->framesProcessed;}
+    if(b->data){result->data = b->data;}
+    if(b->next){result->next = b->next;}
+    if(b->prev){result->prev = b->prev;}
+  }
   return result;
 }
 
-// rAudioProcessor* R_AUDIO_PROCESSOR(r_audio_processor* p)
-// {
-//   rAudioProcessor* rap = (rAudioProcessor*)malloc(sizeof(rAudioProcessor));
-//   rap->process = p->process;
-//   rap->next = p->next;
-//   rap->prev = p->prev;
-//   return rap;
-// }
 r_audio_processor* E_R_AUDIO_PROCESSOR(rAudioProcessor* p) 
 { 
-  r_audio_processor* result = (r_audio_processor*)malloc(sizeof(r_audio_processor));
-  result->process = p->process;  
-  result->next = p->next;
-  result->prev = p->prev;
+  r_audio_processor* result = malloc(sizeof(r_audio_processor));
+  if(p){
+    if(p->process){result->process = p->process;}
+    if(p->next){result->next = p->next;}
+    if(p->prev){result->prev = p->prev;}
+  }
+  // result->process = p->process;
+  // result->next = p->next;
+  // result->prev = p->prev;
   return result;
 }
 
-// #define E_R_AUDIO_BUFFER(b) \
-//   ((r_audio_buffer*){     \
-//     .converter = &E_MA_DATA_CONVERTER(b->converter), \
-//     .callback = &b->callback,  \
-//     .processor = &b->processor,  \
-//     .volume = &b->volume,  \
-//     .pitch = &b->pitch,  \
-//     .pan = &b->pan,  \
-//     .playing = &b->playing,  \
-//     .paused = &b->paused,  \
-//     .looping = &b->looping,  \
-//     .usage = &b->usage,  \
-//     .is_sub_buffer_processed = &b->isSubBufferProcessed, \
-//     .size_in_frames = &b->sizeInFrames,  \
-//     .frame_cursor_pos = &b->frameCursorPos,  \
-//     .frames_processed = &b->framesProcessed, \
-//     .data = &b->data,  \
-//     .next = &b->next,  \
-//     .prev = &b->prev  \
-//   })
-
-// #define E_R_AUDIO_PROCESSOR(p) \
-//   ((r_audio_processor){ \
-//     .process = p->process, \
-//     .next = p->next,      \
-//     .prev = p->prev       \
-//   })
-
-// #define R_AUDIO_STREAM(s) \
-//   ((AudioStream){.buffer = R_AUDIO_BUFFER(s.buffer), \
-//   .processor = R_AUDIO_PROCESSOR(s.processor), \
-//   .sampleRate = s.sample_rate, \
-//   .sampleSize = s.sample_size, \
-//   .channels = s.channels})
-// #define E_R_AUDIO_STREAM(s) \
-//   ((audio_stream){.buffer = E_R_AUDIO_BUFFER(s.buffer), \
-//   .processor = E_R_AUDIO_PROCESSOR(s.processor), \
-//   .sample_rate = s.sampleRate, \
-//   .sample_size = s.sampleSize, \
-//   .channels = s.channels})
+AudioStream R_AUDIO_STREAM(audio_stream s)
+{
+  AudioStream result;
+  result.buffer = s.buffer;
+  result.processor = s.processor;
+  result.sampleRate = s.sample_rate;
+  result.sampleSize = s.sample_size;
+  result.channels = s.channels;
+  return result;
+}
 
 audio_stream E_R_AUDIO_STREAM(AudioStream s)
 {
@@ -439,11 +334,15 @@ audio_stream E_R_AUDIO_STREAM(AudioStream s)
   return result;
 }
 
-// #define SOUND(s) ((Sound){.stream = R_AUDIO_STREAM(s.stream), .frameCount = s.frame_count})
-// #define E_SOUND(s) ((sound){.stream = E_R_AUDIO_STREAM(s.stream), .frame_count = s.frameCount })
+Sound SOUND(sound s) {
+  Sound result;
+  result.stream = R_AUDIO_STREAM(s.stream);
+  result.frameCount = s.frame_count;
+  return result;
+}
 
 sound E_SOUND(Sound s) {
-  sound result;// = sound();
+  sound result;
   result.stream = E_R_AUDIO_STREAM(s.stream);
   result.frame_count = s.frameCount;
   return result;
@@ -952,17 +851,16 @@ UNIFEX_TERM get_master_volume(UnifexEnv *env) {
 
 // Wave/Sound loading/unloading functions
 UNIFEX_TERM load_sound(UnifexEnv *env, char *fileName) {
-  Sound newSound = LoadSound(fileName);
-
-  sound result = E_SOUND(newSound);
-
+  // Sound testSound = LoadSound(fileName);
+  // PlaySound(testSound);
+  sound result = E_SOUND(LoadSound(fileName));
   return load_sound_result(env, result);
 }
 
 // Wave/Sound management functions
 UNIFEX_TERM play_sound(UnifexEnv *env, sound s) {
-  // Sound newSound = SOUND(s);
-  // PlaySound(newSound);
+  Sound cSound = SOUND(s);
+  PlaySound(cSound);
   return play_sound_result_ok(env);
 }
 

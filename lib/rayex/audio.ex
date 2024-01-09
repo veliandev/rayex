@@ -10,6 +10,9 @@ defmodule Rayex.Audio do
   @spec init_audio_device() :: :ok
   defdelegate init_audio_device(), to: Raylib
 
+  @spec is_audio_device_ready?() :: boolean()
+  defdelegate is_audio_device_ready?(), to: Raylib, as: :is_audio_device_ready
+
 
   # Wave/Sound loading/unloading functions
 @doc "Initialize window and OpenGL context"

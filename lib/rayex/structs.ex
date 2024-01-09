@@ -403,7 +403,7 @@ defmodule Rayex.Structs.RAudioBuffer do
   usage is_sub_buffer_processed size_in_frames frame_cursor_pos frames_processed data next prev]a
 
   @type t :: %__MODULE__{
-    converter: Rayex.Structs.MiniaudioDataConverter.t(),
+    converter: binary(),#Rayex.Structs.MiniaudioDataConverter.t(),
     callback: binary(),
     processor: [Rayex.Structs.RAudioProcessor.t()],
     volume: float,
@@ -418,8 +418,8 @@ defmodule Rayex.Structs.RAudioBuffer do
     frame_cursor_pos: integer,
     frames_processed: integer,
     data: binary(),
-    next: [Rayex.Structs.RAudioBuffer.t()],
-    prev: [Rayex.Structs.RAudioBuffer.t()]
+    next: [binary()],
+    prev: [binary()]
   }
 end
 
@@ -430,8 +430,8 @@ defmodule Rayex.Structs.RAudioProcessor do
 
   @type t :: %__MODULE__{
     process: binary(),
-    next: [Rayex.Structs.RAudioProcessor.t()],
-    prev: [Rayex.Structs.RAudioProcessor.t()]
+    next: [binary()],
+    prev: [binary()]
   }
 end
 
@@ -545,7 +545,7 @@ defmodule Rayex.Structs.MiniaudioChannelConverter do
     channel_map_in: [non_neg_integer()],
     channel_map_out: [non_neg_integer()],
     shuffle_table: [non_neg_integer()],
-    weights: %{f32: float, s16: string},
+    weights: Rayex.Structs.MiniaudioChannelConverterWeights.t(),
     owns_heap: boolean(),
     heap: [binary()]
   }
@@ -662,6 +662,16 @@ defmodule Rayex.Structs.MiniaudioLpf1 do
   # /* Memory management. */
   # void* _pHeap;
   # ma_bool32 _ownsHeap;
+end
+
+defmodule Rayex.Structs.MiniaudioLpf2 do
+  @moduledoc "MiniaudioLpf2"
+  @enforce_keys ~w[bq]a
+  defstruct ~w[bq]a
+
+  @type t :: %__MODULE__{
+    bq: Rayex.Structs.MiniaudioBiquadCoefficient.t(),
+  }
 end
 
 defmodule Rayex.Structs.MiniaudioLpf do
@@ -789,8 +799,8 @@ defmodule Rayex.Structs.MiniaudioDataConverter do
     sample_rate_out: non_neg_integer(),
     dither_mode: integer,
     execution_path: integer,
-    channel_converter: Rayex.Structs.MiniaudioChannelConverter.t(),
-    resampler: Rayex.Structs.MiniaudioResampler.t(),
+    channel_converter: binary(), #Rayex.Structs.MiniaudioChannelConverter.t(),
+    resampler: binary(), #Rayex.Structs.MiniaudioResampler.t(),
     has_pre_format_conversion: boolean(),
     has_post_format_conversion: boolean(),
     has_channel_converter: boolean(),
