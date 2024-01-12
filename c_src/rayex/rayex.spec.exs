@@ -28,13 +28,13 @@ spec toggle_fullscreen() :: :ok :: label
 # Cursor-related functions
 
 # Drawing-related functions
-# spec clear_background(color :: color) :: :ok :: label
-# spec begin_drawing() :: :ok :: label
-# spec end_drawing() :: :ok :: label
-# spec begin_mode_2d(camera_2d :: camera_2d) :: :ok :: label
-# spec end_mode_2d() :: :ok :: label
-# spec begin_mode_3d(camera_3d :: camera_3d) :: :ok :: label
-# spec end_mode_3d() :: :ok :: label
+spec clear_background(color :: color) :: :ok :: label
+spec begin_drawing() :: :ok :: label
+spec end_drawing() :: :ok :: label
+spec begin_mode_2d(camera_2d :: camera_2d) :: :ok :: label
+spec end_mode_2d() :: :ok :: label
+spec begin_mode_3d(camera :: camera) :: :ok :: label
+spec end_mode_3d() :: :ok :: label
 
 # VR stereo config functions for VR simulator
 
@@ -42,13 +42,13 @@ spec toggle_fullscreen() :: :ok :: label
 # NOTE: Shader functionality is not available on OpenGL 1.1
 
 # Screen-space-related functions
-# spec get_mouse_ray(mouse_position :: vector2, camera :: camera_3d) :: ray :: ray
+# spec get_mouse_ray(mouse_position :: vector2, camera :: camera) :: ray :: ray
 
 # Timing-related functions
-# spec set_target_fps(fps :: int) :: :ok :: label
-# spec get_fps() :: fps :: int
-# spec get_frame_time() :: delta :: float
-# spec get_time() :: time_from_start :: float
+spec set_target_fps(fps :: int) :: :ok :: label
+spec get_fps() :: fps :: int
+spec get_frame_time() :: delta :: float
+spec get_time() :: time_from_start :: float
 
 # Misc. functions
 
@@ -64,6 +64,22 @@ spec toggle_fullscreen() :: :ok :: label
 # Misc.
 
 # Input-related functions: keyboard
+# bool IsKeyPressed(int key);                             // Check if a key has been pressed once
+spec is_key_pressed(key :: int) :: result :: bool
+# bool IsKeyPressedRepeat(int key);                       // Check if a key has been pressed again (Only PLATFORM_DESKTOP)
+spec is_key_pressed_repeat(key :: int) :: result :: bool
+#bool IsKeyDown(int key);                                // Check if a key is being pressed
+spec is_key_down(key :: int) :: result :: bool
+# bool IsKeyReleased(int key);                            // Check if a key has been released once
+spec is_key_released(key :: int) :: result :: bool
+# bool IsKeyUp(int key);                                  // Check if a key is NOT being pressed
+spec is_key_up(key :: int) :: result :: bool
+# int GetKeyPressed(void);                                // Get key pressed (keycode), call it multiple times for keys queued, returns 0 when the queue is empty
+spec get_key_pressed() :: key :: int
+# int GetCharPressed(void);                               // Get char pressed (unicode), call it multiple times for chars queued, returns 0 when the queue is empty
+spec get_char_pressed() :: character :: int
+# void SetExitKey(int key);                               // Set a custom key to exit program (default is ESC)
+spec set_exit_key(key :: int) :: :ok :: label
 
 # Input-related functions: gamepads
 
@@ -79,8 +95,8 @@ spec toggle_fullscreen() :: :ok :: label
 # Gestures and Touch Handling Functions (Module: rgestures)
 
 # Camera System Functions (Module: rcamera)
-# spec update_camera(camera :: camera_3d, mode :: int) :: :ok :: label
-# spec update_camera_pro(camera :: camera_3d, movement :: vector3, rotation :: vector3, zoom :: float) :: :ok :: label
+# spec update_camera(camera :: camera, mode :: int) :: :ok :: label
+# spec update_camera_pro(camera :: camera, movement :: vector3, rotation :: vector3, zoom :: float) :: :ok :: label
 
 # spec set_camera_pan_control(key_pan :: int) :: :ok :: label
 # spec set_camera_alt_control(key_alt :: int) :: :ok :: label
@@ -182,7 +198,7 @@ spec toggle_fullscreen() :: :ok :: label
 #      ) :: :ok :: label
 
 # spec draw_ray(ray :: ray, color :: color) :: :ok :: label
-# spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
+spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
 
 # Model loading/unloading functions
 
@@ -210,10 +226,13 @@ spec set_master_volume(volume :: float) :: :ok :: label
 spec get_master_volume() :: volume :: float
 
 # Wave/Sound loading/unloading functions
+# spec load_wave(file_name :: string, atom_id :: string) :: wave :: wave
 spec load_sound(file_name :: string) :: sound :: sound
 
 # Wave/Sound management functions
+# spec play_wave(wave :: wave) :: :ok :: label
 spec play_sound(sound :: sound) :: :ok :: label
+spec is_sound_ready(sound :: sound) :: result :: bool
 
 # Music management functions
 
@@ -361,7 +380,7 @@ type font :: %Rayex.Structs.Font{
        glyphs: [glyph_info]
      }
 
-type camera_3d :: %Rayex.Structs.Camera3D{
+type camera :: %Rayex.Structs.Camera{
        position: vector3,
        target: vector3,
        up: vector3,
@@ -465,179 +484,16 @@ type bounding_box :: %Rayex.Structs.BoundingBox{
        max: vector3
      }
 
-type wave :: %Rayex.Structs.Wave{
-       frame_count: unsigned,
-       sample_rate: unsigned,
-       sample_size: unsigned,
-       channels: unsigned,
-       data: payload
-     }
-
-# Miniaudio definitions
-type e_ma_channel_converter_weights :: %Rayex.Structs.MiniaudioChannelConverterWeights{
-       f32: [float],
-       s16: [int]
-}
-
-type e_ma_channel_converter :: %Rayex.Structs.MiniaudioChannelConverter{
-       format: int,
-       channels_in: unsigned,
-       channels_out: unsigned,
-       mixing_mode: int,
-       conversion_path: int,
-       channel_map_in: [unsigned],
-       channel_map_out: [unsigned],
-       shuffle_table: [unsigned],
-       weights: e_ma_channel_converter_weights,
-       owns_heap: bool,
-       heap: [payload]
-}
-
-type e_ma_biquad_coefficient :: %Rayex.Structs.MiniaudioBiquadCoefficient{
-       f32: float,
-       s32: int
-}
-
-type e_ma_biquad :: %Rayex.Structs.MiniaudioBiquad{
-       format: int,
-       channels: unsigned,
-       b0: e_ma_biquad_coefficient,
-       b1: e_ma_biquad_coefficient,
-       b2: e_ma_biquad_coefficient,
-       a1: e_ma_biquad_coefficient,
-       a2: e_ma_biquad_coefficient,
-       pR1: [e_ma_biquad_coefficient],
-       pR2: [e_ma_biquad_coefficient],
-       heap: [payload],
-       owns_heap: bool
-}
-
-type e_ma_lpf1 :: %Rayex.Structs.MiniaudioLpf1{
-       format: int,
-       channels: unsigned,
-       a: e_ma_biquad_coefficient,
-       pR1: [e_ma_biquad_coefficient],
-       heap: [payload],
-       owns_heap: bool
-}
-
-type e_ma_lpf2 :: %Rayex.Structs.MiniaudioLpf2{
-       bq: e_ma_biquad
-}
-
-type e_ma_lpf :: %Rayex.Structs.MiniaudioLpf{
-       format: int,
-       channels: unsigned,
-       sample_rate: unsigned,
-       lpf1_count: unsigned,
-       lpf2_count: unsigned,
-       lpf1: [e_ma_lpf1],
-       lpf2: [e_ma_lpf2],
-       heap: [payload],
-       owns_heap: bool
-}
-
-type e_ma_linear_resampler_config :: %Rayex.Structs.MiniaudioLinearResamplerConfig{
-       format: int,
-       channels: unsigned,
-       sample_rate_in: unsigned,
-       sample_rate_out: unsigned,
-       lpf_order: unsigned,
-       lpf_nyquist_factor: float
-}
-
-
-type e_ma_linear_resampler :: %Rayex.Structs.MiniaudioLinearResampler{
-       config: e_ma_linear_resampler_config,
-       in_advance_int: unsigned,
-       in_advance_frac: unsigned,
-       in_time_int: unsigned,
-       in_time_frac: unsigned,
-       x0: e_ma_channel_converter_weights,
-       x1: e_ma_channel_converter_weights,
-       lpf: e_ma_lpf,
-       owns_heap: bool,
-       heap: [payload]
-}
-
-type e_ma_resampler :: %Rayex.Structs.MiniaudioResampler{
-       resampling_backend: [payload],
-       resampling_backend_vtable: [payload],
-       backend_user_data: [payload],
-       format: int,
-       channels: unsigned,
-       sample_rate_in: unsigned,
-       sample_rate_out: unsigned,
-       linear: e_ma_linear_resampler,
-       owns_heap: bool,
-       heap: [payload]
-}
-
-type e_ma_data_converter :: %Rayex.Structs.MiniaudioDataConverter{
-       format_in: int,
-       format_out: int,
-       channels_in: unsigned,
-       channels_out: unsigned,
-       sample_rate_in: unsigned,
-       sample_rate_out: unsigned,
-       dither_mode: int,
-       execution_path: int,
-       channel_converter: e_ma_channel_converter,
-       resampler: e_ma_resampler,
-       has_pre_format_conversion: bool,
-       has_post_format_conversion: bool,
-       has_channel_converter: bool,
-       has_resampler: bool,
-       is_passthrough: bool,
-       owns_heap: bool,
-       heap: [payload]
-}
-
-type r_audio_processor :: %Rayex.Structs.RAudioProcessor{
-       process: payload,
-       next: [payload], # Fuck
-       prev: [payload]
-}
-
-type r_audio_buffer :: %Rayex.Structs.RAudioBuffer{
-       converter: e_ma_data_converter,
-       callback: payload,
-       processor: [r_audio_processor],
-       volume: float,
-       pitch: float,
-       pan: float,
-       playing: bool,
-       paused: bool,
-       looping: bool,
-       usage: int,
-       is_sub_buffer_processed: [bool],
-       size_in_frames: unsigned,
-       frame_cursor_pos: unsigned,
-       frames_processed: unsigned,
-       data: payload,
-       next: [payload], # Gotta be an r_audio_buffer
-       prev: [payload]
-       }
-
-type audio_stream :: %Rayex.Structs.AudioStream{
-       buffer: [r_audio_buffer],
-       processor: [r_audio_processor],
-       sample_rate: unsigned,
-       sample_size: unsigned,
-       channels: unsigned
-     }
+# type wave :: %Rayex.Structs.Wave{
+#        id: atom
+#      }
 
 type sound :: %Rayex.Structs.Sound{
-       stream: audio_stream,
-       frame_count: unsigned
+       id: int
      }
 
 type music :: %Rayex.Structs.Music{
-       stream: audio_stream,
-       frame_count: unsigned,
-       looping: bool,
-       ctx_type: int,
-       ctx_data: payload
+       id: int
      }
 
 type vr_device_info :: %Rayex.Structs.VrDeviceInfo{

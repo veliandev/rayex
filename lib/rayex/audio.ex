@@ -16,8 +16,18 @@ defmodule Rayex.Audio do
 
   # Wave/Sound loading/unloading functions
 @doc "Initialize window and OpenGL context"
+
+# @spec load_wave(Wave.t(), atom()) :: S.Wave.t()
+# defdelegate load_wave(fileName, atomId), to: RayLib
+
+@spec is_sound_ready?(S.Sound.t()) :: boolean()
+defdelegate is_sound_ready?(sound), to: Raylib, as: :is_sound_ready
+
 @spec load_sound(String.t()) :: S.Sound.t()
 defdelegate load_sound(fileName), to: Raylib
+
+# @spec play_wave(S.Wave.t()) :: :ok
+# defdelegate play_wave(wave), to: Raylib
 
 @spec play_sound(S.Sound.t()) :: :ok
 defdelegate play_sound(sound), to: Raylib
