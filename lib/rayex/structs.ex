@@ -12,6 +12,26 @@ defmodule Rayex.Structs.Vector3 do
   defstruct ~w[x y z]a
 
   @type t :: %__MODULE__{x: float(), y: float(), z: float()}
+
+  def new(x \\ 0.0, y \\ 0.0, z \\ 0.0) do
+    %__MODULE__{x: x, y: y, z: z}
+  end
+
+  def add(%__MODULE__{} = left, %__MODULE__{} = right) do
+    %__MODULE__{
+      x: left.x + right.x,
+      y: left.y + right.y,
+      z: left.z + right.z,
+    }
+  end
+
+  def add(%__MODULE__{} = left, x \\ 0.0, y \\ 0.0, z \\ 0.0) do
+    %__MODULE__{
+      x: left.x + x,
+      y: left.y + y,
+      z: left.z + z,
+    }
+  end
 end
 
 defmodule Rayex.Structs.Vector4 do
@@ -78,6 +98,28 @@ defmodule Rayex.Structs.Rectangle do
   defstruct ~w[x y width height]a
 
   @type t :: %__MODULE__{x: float, y: float, width: float, height: float}
+
+  def new(x, y, width, height) do
+    %__MODULE__{x: x, y: y, width: width, height: height}
+  end
+
+  def add(%__MODULE__{} = left, %__MODULE__{} = right) do
+    %__MODULE__{
+      x: left.x + right.x,
+      y: left.y + right.y,
+      width: left.width + right.width,
+      height: left.height + right.height
+    }
+  end
+
+  def add(%__MODULE__{} = left, x \\ 0.0, y \\ 0.0, width \\ 0.0, height \\ 0.0) do
+    %__MODULE__{
+      x: left.x + x,
+      y: left.y + y,
+      width: left.width + width,
+      height: left.height + height
+    }
+  end
 end
 
 defmodule Rayex.Structs.Image do
@@ -96,22 +138,7 @@ defmodule Rayex.Structs.Image do
         }
 end
 
-defmodule Rayex.Structs.Texture2D do
-  @moduledoc "Texture2D"
-  @enforce_keys ~w[id width height mipmaps format]a
-  defstruct ~w[id width height mipmaps format]a
-
-  @type t :: %__MODULE__{
-          id: non_neg_integer(),
-          width: float(),
-          height: float(),
-          mipmaps: integer(),
-          format: integer()
-        }
-end
-
-# same as Texture
-defmodule Rayex.Structs.TextureCubemap do
+defmodule Rayex.Structs.Texture do
   @moduledoc "Texture"
   @enforce_keys ~w[id width height mipmaps format]a
   defstruct ~w[id width height mipmaps format]a
@@ -127,19 +154,6 @@ end
 
 defmodule Rayex.Structs.RenderTexture do
   @moduledoc "RenderTexture"
-  @enforce_keys ~w[id texture depth]a
-  defstruct ~w[id texture depth]a
-
-  @type t :: %__MODULE__{
-          id: non_neg_integer(),
-          texture: Rayex.Structs.Texture2D.t(),
-          depth: Rayex.Structs.Texture2D.t()
-        }
-end
-
-# same as render_texture
-defmodule Rayex.Structs.RenderTexture2D do
-  @moduledoc "RenderTexture2D"
   @enforce_keys ~w[id texture depth]a
   defstruct ~w[id texture depth]a
 
@@ -206,6 +220,11 @@ defmodule Rayex.Structs.Camera do
           fovy: float(),
           projection: integer()
         }
+
+  # def fetch(%__MODULE__{} = module, :position), do: {:ok, module.position}
+  # def get_and_update(data, key, func) do
+  #   Map.get_and_update(data, key, func)
+  # end
 end
 
 defmodule Rayex.Structs.Camera2D do
@@ -315,33 +334,34 @@ end
 
 defmodule Rayex.Structs.Model do
   @moduledoc "Model"
-  @enforce_keys ~w[transform mesh_count material_count mashes materials mesh_material bone_count bones bind_pose]a
-  defstruct ~w[transform mesh_count material_count mashes materials mesh_material bone_count bones bind_pose]a
+  @enforce_keys ~w[transform mesh_count material_count meshes materials mesh_material bone_count bones bind_pose c_id]a
+  defstruct ~w[transform mesh_count material_count meshes materials mesh_material bone_count bones bind_pose c_id]a
 
   @type t :: %__MODULE__{
           transform: Rayex.Structs.Matrix.t(),
           mesh_count: integer(),
           material_count: integer(),
-          mashes: [Rayex.Structs.Mesh.t()],
+          meshes: [Rayex.Structs.Mesh.t()],
           materials: [Rayex.Structs.Material.t()],
           mesh_material: [integer()],
           bone_count: integer(),
           bones: [Rayex.Structs.BoneInfo.t()],
-          bind_pose: [Rayex.Structs.Transform.t()]
+          bind_pose: [Rayex.Structs.Transform.t()],
+          c_id: non_neg_integer()
         }
 end
 
 defmodule Rayex.Structs.ModelAnimation do
   @moduledoc "ModelAnimation"
-  @enforce_keys ~w[bone_count frame_count bones frame_poses]a
-  defstruct ~w[bone_count frame_count bones frame_poses]a
+  @enforce_keys ~w[bone_count frame_count bones name]a
+  defstruct ~w[bone_count frame_count bones name]a
 
   @type t :: %__MODULE__{
           bone_count: integer(),
           frame_count: integer(),
           bones: [Rayex.Structs.BoneInfo.t()],
-          # XXX: should be **transform
-          frame_poses: [[Rayex.Structs.Transform.t()]]
+          # frame_poses: [[Rayex.Structs.Transform.t()]],
+          name: String.t()
         }
 end
 
@@ -390,13 +410,28 @@ end
 #         }
 # end
 
-defmodule Rayex.Structs.Sound do
-  @moduledoc "Sound"
-  @enforce_keys ~w[id]a
-  defstruct ~w[id]a
+defmodule Rayex.Structs.AudioStream do
+  @moduledoc "AudioStream"
+  @enforce_keys ~w[buffer processor sample_rate sample_size channels]a
+  defstruct ~w[buffer processor sample_rate sample_size channels]a
 
   @type t :: %__MODULE__{
-          id: integer()
+    buffer: non_neg_integer(),#;       // Pointer to internal data used by the audio system
+    processor: non_neg_integer(),# // Pointer to internal data processor, useful for audio effects
+    sample_rate: non_neg_integer(),
+    sample_size: non_neg_integer(),
+    channels: non_neg_integer()
+  }
+end
+
+defmodule Rayex.Structs.Sound do
+  @moduledoc "Sound"
+  @enforce_keys ~w[stream frame_count]a
+  defstruct ~w[stream frame_count]a
+
+  @type t :: %__MODULE__{
+          stream: Rayex.Structs.AudioStream.t(),
+          frame_count: non_neg_integer()
         }
 end
 

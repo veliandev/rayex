@@ -10,9 +10,11 @@
    def natives(_platform) do
      [
        rayex: [
-         sources: ["rayex.c"],
+         language: :cpp,
+         includes: ["raygui.h"],
+         sources: ["rayex.cpp"],
          interface: [:nif, :cnode],
-         libs: ["raylib"],
+         libs: ["raylib", "GL", "m", "pthread", "dl", "rt", "X11"],
          preprocessor: Unifex
        ]
      ]

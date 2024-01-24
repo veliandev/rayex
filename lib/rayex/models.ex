@@ -24,17 +24,16 @@ defmodule Rayex.Models do
   @spec draw_grid(non_neg_integer(), float()) :: :ok
   defdelegate draw_grid(slices, spacing), to: Raylib
 
-  # Model loading/unloading functions
+  @spec load_model(String.t()) :: S.Model.t()
+  defdelegate load_model(path), to: Raylib
 
-  # Model drawing functions
+  @spec is_model_ready?(S.Model.t()) :: boolean()
+  defdelegate is_model_ready?(model), to: Raylib, as: :is_model_ready
 
-  # Mesh management functions
+  @spec draw_model(S.Model.t(), S.Vector3.t(), float(), S.Color.t()) :: :ok
+  defdelegate draw_model(model, position, scale, tint), to: Raylib
 
-  # Mesh generation functions
+  @spec load_model_animations(String.t()) :: [S.ModelAnimation.t()]
+  defdelegate load_model_animations(filename), to: Raylib
 
-  # Material loading/unloading functions
-
-  # Model animations loading/unloading functions
-
-  # Collision detection functions
 end

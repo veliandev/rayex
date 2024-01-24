@@ -1,3 +1,6 @@
+// #pragma once
+
+
 #include "_generated/rayex.h"
 
-typedef unsigned long ulong;
+// unsigned long ulong;

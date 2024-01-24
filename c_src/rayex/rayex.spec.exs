@@ -11,30 +11,70 @@ interface [NIF, CNode]
 
 # Window-related functions
 spec init_window(width :: int, height :: int, title :: string) :: :ok :: label
+dirty :cpu, init_window: 3
+
 spec window_should_close() :: result :: bool
+dirty :cpu, window_should_close: 0
+
 spec close_window() :: :ok :: label
+dirty :cpu, close_window: 0
+
 spec is_window_ready() :: result :: bool
+dirty :cpu, is_window_ready: 0
+
 spec is_window_fullscreen() :: result :: bool
+dirty :cpu, is_window_fullscreen: 0
+
 spec is_window_hidden() :: result :: bool
+dirty :cpu, is_window_hidden: 0
+
 spec is_window_minimized() :: result :: bool
+dirty :cpu, is_window_minimized: 0
+
 spec is_window_maximized() :: result :: bool
+dirty :cpu, is_window_maximized: 0
+
 spec is_window_focused() :: result :: bool
+dirty :cpu, is_window_focused: 0
+
 spec is_window_resized() :: result :: bool
+dirty :cpu, is_window_resized: 0
+
 spec is_window_state(flag :: int) :: result :: bool
+dirty :cpu, is_window_state: 1
+
 spec set_window_state(flag :: int) :: :ok :: label
+dirty :cpu, set_window_state: 1
+
 spec clear_window_state(flag :: int) :: :ok :: label
+dirty :cpu, clear_window_state: 1
+
 spec toggle_fullscreen() :: :ok :: label
+dirty :cpu, toggle_fullscreen: 0
 
 # Cursor-related functions
 
 # Drawing-related functions
 spec clear_background(color :: color) :: :ok :: label
+dirty :cpu, clear_background: 1
+
 spec begin_drawing() :: :ok :: label
+dirty :cpu, begin_drawing: 0
+
 spec end_drawing() :: :ok :: label
+dirty :cpu, end_drawing: 0
+
 spec begin_mode_2d(camera_2d :: camera_2d) :: :ok :: label
+dirty :cpu, begin_mode_2d: 1
+
 spec end_mode_2d() :: :ok :: label
+dirty :cpu, end_mode_2d: 0
+
 spec begin_mode_3d(camera :: camera) :: :ok :: label
+dirty :cpu, begin_mode_3d: 1
+
 spec end_mode_3d() :: :ok :: label
+dirty :cpu, end_mode_3d: 0
 
 # VR stereo config functions for VR simulator
 
@@ -64,22 +104,29 @@ spec get_time() :: time_from_start :: float
 # Misc.
 
 # Input-related functions: keyboard
-# bool IsKeyPressed(int key);                             // Check if a key has been pressed once
 spec is_key_pressed(key :: int) :: result :: bool
-# bool IsKeyPressedRepeat(int key);                       // Check if a key has been pressed again (Only PLATFORM_DESKTOP)
+dirty :cpu, is_key_pressed: 1
+
 spec is_key_pressed_repeat(key :: int) :: result :: bool
-#bool IsKeyDown(int key);                                // Check if a key is being pressed
+dirty :cpu, is_key_pressed_repeat: 1
+
 spec is_key_down(key :: int) :: result :: bool
-# bool IsKeyReleased(int key);                            // Check if a key has been released once
+dirty :cpu, is_key_down: 1
+
 spec is_key_released(key :: int) :: result :: bool
-# bool IsKeyUp(int key);                                  // Check if a key is NOT being pressed
+dirty :cpu, is_key_released: 1
+
 spec is_key_up(key :: int) :: result :: bool
-# int GetKeyPressed(void);                                // Get key pressed (keycode), call it multiple times for keys queued, returns 0 when the queue is empty
+dirty :cpu, is_key_up: 1
+
 spec get_key_pressed() :: key :: int
-# int GetCharPressed(void);                               // Get char pressed (unicode), call it multiple times for chars queued, returns 0 when the queue is empty
+dirty :cpu, get_key_pressed: 0
+
 spec get_char_pressed() :: character :: int
-# void SetExitKey(int key);                               // Set a custom key to exit program (default is ESC)
+dirty :cpu, get_char_pressed: 0
+
 spec set_exit_key(key :: int) :: :ok :: label
+dirty :cpu, set_exit_key: 1
 
 # Input-related functions: gamepads
 
@@ -199,20 +246,87 @@ spec set_exit_key(key :: int) :: :ok :: label
 
 # spec draw_ray(ray :: ray, color :: color) :: :ok :: label
 spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
+dirty :cpu, draw_grid: 2
 
-# Model loading/unloading functions
+# // Model management functions
+# Model LoadModel(const char *fileName);                                                // Load model from files (meshes and materials)
+spec load_model(filename :: string) :: model :: model
+dirty :cpu, load_model: 1
 
-# Model drawing functions
+spec draw_model(model :: model, position :: vector3, scale :: float, tint :: color) :: :ok :: label
+dirty :cpu, draw_model: 4
 
-# Mesh management functions
+spec is_model_ready(model) :: result :: bool
 
-# Mesh generation functions
+spec load_model_animations(filename :: string) :: result :: [model_animation]
+dirty :io, load_model_animations: 1
 
-# Material loading/unloading functions
+# void UpdateModelAnimation(Model model, ModelAnimation anim, int frame);               // Update model animation pose
+spec update_model_animation(model :: model, anim :: model_animation, frame :: int) :: :ok :: label
+dirty :cpu, update_model_animation: 3
 
-# Model animations loading/unloading functions
+# Model LoadModelFromMesh(Mesh mesh);                                                   // Load model from generated mesh (default material)
+# bool IsModelReady(Model model);                                                       // Check if a model is ready
+# void UnloadModel(Model model);                                                        // Unload model (including meshes) from memory (RAM and/or VRAM)
+# BoundingBox GetModelBoundingBox(Model model);                                         // Compute model bounding box limits (considers all meshes)
 
-# Collision detection functions
+# // Model drawing functions
+# void DrawModel(Model model, Vector3 position, float scale, Color tint);               // Draw a model (with texture if set)
+# void DrawModelEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint); // Draw a model with extended parameters
+# void DrawModelWires(Model model, Vector3 position, float scale, Color tint);          // Draw a model wires (with texture if set)
+# void DrawModelWiresEx(Model model, Vector3 position, Vector3 rotationAxis, float rotationAngle, Vector3 scale, Color tint); // Draw a model wires (with texture if set) with extended parameters
+# void DrawBoundingBox(BoundingBox box, Color color);                                   // Draw bounding box (wires)
+# void DrawBillboard(Camera camera, Texture2D texture, Vector3 position, float size, Color tint);   // Draw a billboard texture
+# void DrawBillboardRec(Camera camera, Texture2D texture, Rectangle source, Vector3 position, Vector2 size, Color tint); // Draw a billboard texture defined by source
+# void DrawBillboardPro(Camera camera, Texture2D texture, Rectangle source, Vector3 position, Vector3 up, Vector2 size, Vector2 origin, float rotation, Color tint); // Draw a billboard texture defined by source and rotation
+
+# // Mesh management functions
+# void UploadMesh(Mesh *mesh, bool dynamic);                                            // Upload mesh vertex data in GPU and provide VAO/VBO ids
+# void UpdateMeshBuffer(Mesh mesh, int index, const void *data, int dataSize, int offset); // Update mesh vertex data in GPU for a specific buffer index
+# void UnloadMesh(Mesh mesh);                                                           // Unload mesh data from CPU and GPU
+# void DrawMesh(Mesh mesh, Material material, Matrix transform);                        // Draw a 3d mesh with material and transform
+# void DrawMeshInstanced(Mesh mesh, Material material, const Matrix *transforms, int instances); // Draw multiple mesh instances with material and different transforms
+# bool ExportMesh(Mesh mesh, const char *fileName);                                     // Export mesh data to file, returns true on success
+# BoundingBox GetMeshBoundingBox(Mesh mesh);                                            // Compute mesh bounding box limits
+# void GenMeshTangents(Mesh *mesh);                                                     // Compute mesh tangents
+
+# // Mesh generation functions
+# Mesh GenMeshPoly(int sides, float radius);                                            // Generate polygonal mesh
+# Mesh GenMeshPlane(float width, float length, int resX, int resZ);                     // Generate plane mesh (with subdivisions)
+# Mesh GenMeshCube(float width, float height, float length);                            // Generate cuboid mesh
+# Mesh GenMeshSphere(float radius, int rings, int slices);                              // Generate sphere mesh (standard sphere)
+# Mesh GenMeshHemiSphere(float radius, int rings, int slices);                          // Generate half-sphere mesh (no bottom cap)
+# Mesh GenMeshCylinder(float radius, float height, int slices);                         // Generate cylinder mesh
+# Mesh GenMeshCone(float radius, float height, int slices);                             // Generate cone/pyramid mesh
+# Mesh GenMeshTorus(float radius, float size, int radSeg, int sides);                   // Generate torus mesh
+# Mesh GenMeshKnot(float radius, float size, int radSeg, int sides);                    // Generate trefoil knot mesh
+# Mesh GenMeshHeightmap(Image heightmap, Vector3 size);                                 // Generate heightmap mesh from image data
+# Mesh GenMeshCubicmap(Image cubicmap, Vector3 cubeSize);                               // Generate cubes-based map mesh from image data
+
+# // Material loading/unloading functions
+# Material *LoadMaterials(const char *fileName, int *materialCount);                    // Load materials from model file
+# Material LoadMaterialDefault(void);                                                   // Load default material (Supports: DIFFUSE, SPECULAR, NORMAL maps)
+# bool IsMaterialReady(Material material);                                              // Check if a material is ready
+# void UnloadMaterial(Material material);                                               // Unload material from GPU memory (VRAM)
+# void SetMaterialTexture(Material *material, int mapType, Texture2D texture);          // Set texture for a material map type (MATERIAL_MAP_DIFFUSE, MATERIAL_MAP_SPECULAR...)
+# void SetModelMeshMaterial(Model *model, int meshId, int materialId);                  // Set material for a mesh
+
+# // Model animations loading/unloading functions
+# ModelAnimation *LoadModelAnimations(const char *fileName, int *animCount);            // Load model animations from file
+# void UpdateModelAnimation(Model model, ModelAnimation anim, int frame);               // Update model animation pose
+# void UnloadModelAnimation(ModelAnimation anim);                                       // Unload animation data
+# void UnloadModelAnimations(ModelAnimation *animations, int animCount);                // Unload animation array data
+# bool IsModelAnimationValid(Model model, ModelAnimation anim);                         // Check model animation skeleton match
+
+# // Collision detection functions
+# bool CheckCollisionSpheres(Vector3 center1, float radius1, Vector3 center2, float radius2);   // Check collision between two spheres
+# bool CheckCollisionBoxes(BoundingBox box1, BoundingBox box2);                                 // Check collision between two bounding boxes
+# bool CheckCollisionBoxSphere(BoundingBox box, Vector3 center, float radius);                  // Check collision between box and sphere
+# RayCollision GetRayCollisionSphere(Ray ray, Vector3 center, float radius);                    // Get collision info between ray and sphere
+# RayCollision GetRayCollisionBox(Ray ray, BoundingBox box);                                    // Get collision info between ray and box
+# RayCollision GetRayCollisionMesh(Ray ray, Mesh mesh, Matrix transform);                       // Get collision info between ray and mesh
+# RayCollision GetRayCollisionTriangle(Ray ray, Vector3 p1, Vector3 p2, Vector3 p3);            // Get collision info between ray and triangle
+# RayCollision GetRayCollisionQuad(Ray ray, Vector3 p1, Vector3 p2, Vector3 p3, Vector3 p4);    // Get collision info between ray and quad
 
 #########
 # AUDIO #
@@ -222,12 +336,13 @@ spec draw_grid(slices :: int, spacing :: float) :: :ok :: label
 spec init_audio_device() :: :ok :: label
 spec close_audio_device() :: :ok :: label
 spec is_audio_device_ready() :: result :: bool
-spec set_master_volume(volume :: float) :: :ok :: label
 spec get_master_volume() :: volume :: float
+spec set_master_volume(volume :: float) :: :ok :: label
 
 # Wave/Sound loading/unloading functions
 # spec load_wave(file_name :: string, atom_id :: string) :: wave :: wave
 spec load_sound(file_name :: string) :: sound :: sound
+dirty :io, load_sound: 1
 
 # Wave/Sound management functions
 # spec play_wave(wave :: wave) :: :ok :: label
@@ -238,10 +353,103 @@ spec is_sound_ready(sound :: sound) :: result :: bool
 
 # AudioStream management functions
 
+# Raygui functions
+# Global gui state control functions
+spec gui_enable() :: :ok :: label
+spec gui_disable() :: :ok :: label
+spec gui_lock() :: :ok :: label
+spec gui_unlock() :: :ok :: label
+spec gui_is_locked() :: result :: bool
+spec gui_set_alpha(alpha :: float) :: :ok :: label
+spec gui_set_state(state :: int) :: :ok :: label
+spec gui_get_state() :: result :: int
+
+# # Font set/get functions
+# RAYGUIAPI void GuiSetFont(Font font);                           // Set gui custom font (global state)
+# RAYGUIAPI Font GuiGetFont(void);                                // Get gui custom font (global state)
+
+# # Style set/get functions
+# RAYGUIAPI void GuiSetStyle(int control, int property, int value); // Set one style property
+# RAYGUIAPI int GuiGetStyle(int control, int property);           // Get one style property
+
+# # Styles loading functions
+# RAYGUIAPI void GuiLoadStyle(const char *fileName);              // Load style file over global style variable (.rgs)
+spec gui_load_style_default() :: :ok :: label
+
+# # Tooltips management functions
+# RAYGUIAPI void GuiEnableTooltip(void);                          // Enable gui tooltips (global state)
+# RAYGUIAPI void GuiDisableTooltip(void);                         // Disable gui tooltips (global state)
+# RAYGUIAPI void GuiSetTooltip(const char *tooltip);              // Set tooltip string
+
+# # Icons functionality
+# RAYGUIAPI const char *GuiIconText(int iconId, const char *text); // Get text with icon id prepended (if supported)
+# # #if !defined(RAYGUI_NO_ICONS)
+# # RAYGUIAPI void GuiSetIconScale(int scale);                      // Set default icon drawing size
+# # RAYGUIAPI unsigned int *GuiGetIcons(void);                      // Get raygui icons data pointer
+# # RAYGUIAPI char **GuiLoadIcons(const char *fileName, bool loadIconsName); // Load raygui icons file (.rgi) into internal icons data
+# # RAYGUIAPI void GuiDrawIcon(int iconId, int posX, int posY, int pixelSize, Color color); // Draw icon using pixel size at specified position
+# # #endif
+
+
+# # Controls
+# #----------------------------------------------------------------------------------------------------------
+# # Container/separator controls, useful for controls organization
+spec gui_window_box(bounds :: rectangle, title :: string) :: result :: int
+spec gui_group_box(bounds :: rectangle, title :: string) :: result :: int
+spec gui_line(bounds :: rectangle, text :: string) :: result :: int
+spec gui_panel(bounds :: rectangle, text :: string) :: result :: int
+# RAYGUIAPI int GuiTabBar(Rectangle bounds, const char **text, int count, int *active);                  // Tab Bar control, returns TAB to be closed or -1
+spec gui_tab_bar(bounds :: rectangle, text :: [string], count :: int, active :: int) :: {exit_pressed :: int, tab_pressed :: int}
+# RAYGUIAPI int GuiScrollPanel(Rectangle bounds, const char *text, Rectangle content, Vector2 *scroll, Rectangle *view); // Scroll Panel control
+
+# # Basic controls set
+spec gui_label(bounds :: rectangle, text :: string) :: result :: int
+spec gui_button(bounds :: rectangle, text :: string) :: result :: bool
+spec gui_label_button(bounds :: rectangle, text :: string) :: result :: bool
+spec gui_toggle(bounds :: rectangle, text :: string, active :: bool) :: {result :: int, active :: bool}
+# RAYGUIAPI int GuiToggleGroup(Rectangle bounds, const char *text, int *active);                         // Toggle Group control, returns active toggle index
+
+# RAYGUIAPI int GuiToggleSlider(Rectangle bounds, const char *text, int *active);                        // Toggle Slider control, returns true when clicked
+# RAYGUIAPI int GuiCheckBox(Rectangle bounds, const char *text, bool *checked);                          // Check Box control, returns true when active
+# RAYGUIAPI int GuiComboBox(Rectangle bounds, const char *text, int *active);                            // Combo Box control, returns selected item index
+
+# RAYGUIAPI int GuiDropdownBox(Rectangle bounds, const char *text, int *active, bool editMode);          // Dropdown Box control, returns selected item
+# RAYGUIAPI int GuiSpinner(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Spinner control, returns selected value
+# RAYGUIAPI int GuiValueBox(Rectangle bounds, const char *text, int *value, int minValue, int maxValue, bool editMode); // Value Box control, updates input text with numbers
+# RAYGUIAPI int GuiTextBox(Rectangle bounds, char *text, int textSize, bool editMode);                   // Text Box control, updates input text
+
+# RAYGUIAPI int GuiSlider(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Slider control, returns selected value
+spec gui_slider(bounds :: rectangle, text_left :: string, text_right :: string, value :: float, min_value :: float, max_value :: float) :: {result :: int, value :: float}
+spec gui_slider_bar(bounds :: rectangle, text_left :: string, text_right :: string, value :: float, min_value :: float, max_value :: float) :: {result :: int, value :: float}
+# RAYGUIAPI int GuiProgressBar(Rectangle bounds, const char *textLeft, const char *textRight, float *value, float minValue, float maxValue); // Progress Bar control, shows current progress value
+spec gui_progress_bar(bounds :: rectangle, text_left :: string, text_right :: string, value :: float, min_value :: float, max_value :: float) :: {result :: int, value :: float}
+# RAYGUIAPI int GuiStatusBar(Rectangle bounds, const char *text);                                        // Status Bar control, shows info text
+spec gui_status_bar(bounds :: rectangle, text :: string) :: result :: int
+# RAYGUIAPI int GuiDummyRec(Rectangle bounds, const char *text);                                         // Dummy control for placeholders
+# RAYGUIAPI int GuiGrid(Rectangle bounds, const char *text, float spacing, int subdivs, Vector2 *mouseCell); // Grid control, returns mouse cell position
+
+# # Advance controls set
+# RAYGUIAPI int GuiListView(Rectangle bounds, const char *text, int *scrollIndex, int *active);          // List View control, returns selected list item index
+# RAYGUIAPI int GuiListViewEx(Rectangle bounds, const char **text, int count, int *scrollIndex, int *active, int *focus); // List View with extended parameters
+# RAYGUIAPI int GuiMessageBox(Rectangle bounds, const char *title, const char *message, const char *buttons); // Message Box control, displays a message
+spec gui_message_box(bounds :: rectangle, title :: string, message :: string, buttons :: string) :: result :: int
+# RAYGUIAPI int GuiTextInputBox(Rectangle bounds, const char *title, const char *message, const char *buttons, char *text, int textMaxSize, bool *secretViewActive); // Text Input Box control, ask for text, supports secret
+# RAYGUIAPI int GuiColorPicker(Rectangle bounds, const char *text, Color *color);                        // Color Picker control (multiple color controls)
+# RAYGUIAPI int GuiColorPanel(Rectangle bounds, const char *text, Color *color);                         // Color Panel control
+# RAYGUIAPI int GuiColorBarAlpha(Rectangle bounds, const char *text, float *alpha);                      // Color Bar Alpha control
+# RAYGUIAPI int GuiColorBarHue(Rectangle bounds, const char *text, float *value);                        // Color Bar Hue control
+# RAYGUIAPI int GuiColorPickerHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                // Color Picker control that avoids conversion to RGB on each call (multiple color controls)
+# RAYGUIAPI int GuiColorPanelHSV(Rectangle bounds, const char *text, Vector3 *colorHsv);                 // Color Panel control that returns HSV color value, used by GuiColorPickerHSV()
+
+
 ###########
 # STRUCTS #
 ###########
 # https://github.com/raysan5/raylib/blob/master/src/raylib.h
+
+type string_array :: %Rayex.Structs.StringArray{
+  strings: [string]
+}
 
 type vector2 :: %Rayex.Structs.Vector2{
        x: float,
@@ -315,25 +523,7 @@ type image :: %Rayex.Structs.Image{
        format: int
      }
 
-type texture :: %Rayex.Structs.Texture{
-       id: unsigned,
-       width: float,
-       height: float,
-       mipmaps: int,
-       format: int
-     }
-
-# same as Texture
-type texture_2d :: %Rayex.Structs.Texture2D{
-       id: unsigned,
-       width: float,
-       height: float,
-       mipmaps: int,
-       format: int
-     }
-
-# same as Texture
-type texture_cubemap :: %Rayex.Structs.TextureCubemap{
+type texture_2d :: %Rayex.Structs.Texture{
        id: unsigned,
        width: float,
        height: float,
@@ -343,15 +533,8 @@ type texture_cubemap :: %Rayex.Structs.TextureCubemap{
 
 type render_texture :: %Rayex.Structs.RenderTexture{
        id: unsigned,
-       texture: texture,
-       depth: texture
-     }
-
-# same as render_texture
-type render_texture_2d :: %Rayex.Structs.RenderTexture2D{
-       id: unsigned,
-       texture: texture,
-       depth: texture
+       texture: texture_2d,
+       depth: texture_2d
      }
 
 type n_patch_info :: %Rayex.Structs.NPatchInfo{
@@ -375,7 +558,7 @@ type font :: %Rayex.Structs.Font{
        base_size: int,
        glyph_count: int,
        glyph_padding: int,
-       texture: texture,
+       texture: texture_2d,
        recs: [rectangle],
        glyphs: [glyph_info]
      }
@@ -415,7 +598,7 @@ type mesh :: %Rayex.Structs.Mesh{
        bone_weights: [float],
 
        # OpenGL identifiers
-       vao_id: [unsigned],
+       vao_id: unsigned,
        vbo_id: [unsigned]
      }
 
@@ -436,11 +619,11 @@ type material :: %Rayex.Structs.Material{
        params: [float]
      }
 
-type transform :: %Rayex.Structs.Transform{
-       translation: vector3,
-       rotation: quaternion,
-       scale: vector3
-     }
+type transform_type :: %Rayex.Structs.Transform{
+      translation: vector3,
+      rotation: quaternion,
+      scale: vector3
+    }
 
 type bone_info :: %Rayex.Structs.BoneInfo{
        name: string,
@@ -451,20 +634,23 @@ type model :: %Rayex.Structs.Model{
        transform: matrix,
        mesh_count: int,
        material_count: int,
-       mashes: [mesh],
+       meshes: [mesh],
        materials: [material],
        mesh_material: [int],
        bone_count: int,
        bones: [bone_info],
-       bind_pose: [transform]
+       bind_pose: [transform_type],
+       c_id: unsigned
      }
 
+
+
 type model_animation :: %Rayex.Structs.ModelAnimation{
-       bone_count: int,
-       frame_count: int,
-       bones: [bone_info],
-       # XXX: should be **transform
-       frame_poses: [transform]
+        bone_count: int,
+        frame_count: int,
+        bones: [bone_info],
+        #  frame_poses: [transform_type]
+        name: string
      }
 
 type ray :: %Rayex.Structs.Ray{
@@ -488,8 +674,17 @@ type bounding_box :: %Rayex.Structs.BoundingBox{
 #        id: atom
 #      }
 
+type audio_stream :: %Rayex.Structs.AudioStream{
+  buffer: unsigned,#;       // Pointer to internal data used by the audio system
+  processor: unsigned,# // Pointer to internal data processor, useful for audio effects
+  sample_rate: unsigned,
+  sample_size: unsigned,
+  channels: unsigned
+}
+
 type sound :: %Rayex.Structs.Sound{
-       id: int
+       stream: audio_stream,
+       frame_count: unsigned
      }
 
 type music :: %Rayex.Structs.Music{

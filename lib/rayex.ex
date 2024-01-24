@@ -15,6 +15,7 @@ defmodule Rayex do
       import Rayex.Shapes
       import Rayex.Text
       import Rayex.Textures
+      import Rayex.GUI
     end
   end
 end
