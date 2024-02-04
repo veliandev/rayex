@@ -1,5 +1,5 @@
 #include "rayex.h"
-#include <raylib.h>
+#include "raylib.h"
 #include <erl_nif.h>
 
 #include <iostream>

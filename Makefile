@@ -1,37 +1,35 @@
-# will find the current erlang include path
-ERL_INCLUDE_PATH = $(shell erl -eval 'io:format("~s", [lists:concat([code:root_dir(), "/erts-", erlang:system_info(version), "/include"])])' -s init stop -noshell)
-
-CFLAGS += -I$(ERL_INCLUDE_PATH) -g -O3 -pedantic -Wall -Wextra -Wno-unused-parameter -Wno-unused-function
-CFLAGS += -lraylib
-
-ifneq ($(OS),Windows_NT)
-	CFLAGS += -fPIC
-
-	ifeq ($(shell uname),Darwin)
-		LDFLAGS += -dynamiclib -undefined dynamic_lookup
-	endif
-endif
+RAYLIB_SRC = ./src/raylib/src
+C_SRC = ./c_src/rayex
 
 .PHONY: all
-all: pre priv/raylib_core.so
+all: ensure_raylib ensure_lib ensure_include raylib_make raylib_move
 
-.PHONY: pre
-pre:
-	mkdir -p priv
+.PHONY: ensure_raylib
+.SILENT: ensure_raylib
+ensure_raylib:
+	if [ ! -d $(RAYLIB_SRC) ]; then\
+		echo "Git submodule Raylib has not been pulled. Raylib is expected to exist under: (ProjectRoot)/src/raylib" ;\
+	fi
 
-.PHONY: clean
-clean:
-	mix clean
-	rm -r c_src/rayex/_generated
+.PHONY: ensure_lib
+.SILENT: ensure_lib
+ensure_lib:
+	if [ ! -d $(C_SRC)/lib ]; then\
+		mkdir $(C_SRC)/lib ;\
+	fi
 
-.PHONY: test
-test:
-	mix compile --warnings-as-errors
-	mix test
-	mix format
-	mix format --check-formatted
-	mix credo --strict
-	mix dialyzer
+.PHONY: ensure_include
+.SILENT: ensure_include
+ensure_include:
+	if [ ! -d $(C_SRC)/include ]; then\
+		mkdir $(C_SRC)/include ;\
+	fi
 
-priv/raylib_core.so: src/raylib_core.c
-	$(CC) $(CFLAGS) -shared $(LDFLAGS) -o $@ src/raylib_core.c
+.PHONEY: raylib_make
+raylib_make:
+	make PLATFORM=PLATFORM_DESKTOP --directory $(RAYLIB_SRC)
+
+.PHONEY: raylib_move
+raylib_move:
+	cp $(RAYLIB_SRC)/libraylib.a $(C_SRC)/lib/libraylib.a
+	cp $(RAYLIB_SRC)/raylib.h $(C_SRC)/include/raylib.h

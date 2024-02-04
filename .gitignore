@@ -29,4 +29,11 @@ rayex-*.tar
 /priv/
 
 /c_src/rayex/_generated/
+/c_src/rayex/include
+/c_src/rayex/lib
+
+.elixir_ls
+
 .ccls-cache/
+
+/src/raylib

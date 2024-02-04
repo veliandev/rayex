@@ -11,7 +11,8 @@
      [
        rayex: [
          language: :cpp,
-         includes: ["raygui.h"],
+         lib_dirs: ["#{File.cwd!()}/c_src/rayex/lib"],
+         includes: ["#{File.cwd!()}/c_src/rayex/include"],
          sources: ["rayex.cpp"],
          interface: [:nif, :cnode],
          libs: ["raylib", "GL", "m", "pthread", "dl", "rt", "X11"],

@@ -47,9 +47,9 @@ defmodule TestSound do
     dbg R.start_link()
 
     init_window(1280, 720, "This is mainly for testing all the new stuff.")
-    # init_audio_device()
 
-    # R.set(:model, model)
+    # Sound does not work right now; have to rewrite it all once THIS is patched: https://github.com/membraneframework/membrane_core/issues/719
+    # init_audio_device()
 
     init(window_ready?())
   end
@@ -63,16 +63,14 @@ defmodule TestSound do
     gui_enable()
     gui_load_style_default()
 
-    R.set(:model, load_model("examples/resources/models/robot.glb"))
+    # Model does not work right now; have to rewrite it all once THIS is patched: https://github.com/membraneframework/membrane_core/issues/719
+    # R.set(:model, load_model("examples/resources/models/robot.glb"))
 
-    # This is currently busted.
+    # Model does not work right now; have to rewrite it all once THIS is patched: https://github.com/membraneframework/membrane_core/issues/719
     # model_anims = load_model_animations("examples/resources/models/robot.glb")
-
-    # IO.puts("Model animations:")
     # Enum.each(model_anims, fn anim ->
     #   dbg anim
     # end)
-    # IO.puts("end")
     # R.set(:model_animations, load_model_animations("examples/resources/models/robot.glb"))
 
     # set_master_volume(50.0)
@@ -142,9 +140,10 @@ defmodule TestSound do
     begin_mode_3d(R.get(:camera))
     draw_grid(10, 1.0)
 
-    if (is_model_ready?(R.get(:model))) do
-      draw_model(R.get(:model), R.get(:model_position), 1.0, %S.Color{r: 255, g: 255, b: 255, a: 255})
-    end
+    # Model does not work right now; have to rewrite it all once THIS is patched: https://github.com/membraneframework/membrane_core/issues/719
+    # if (is_model_ready?(R.get(:model))) do
+    #   draw_model(R.get(:model), R.get(:model_position), 1.0, %S.Color{r: 255, g: 255, b: 255, a: 255})
+    # end
 
     end_mode_3d()
 

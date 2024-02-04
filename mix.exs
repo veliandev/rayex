@@ -36,7 +36,7 @@ defmodule Rayex.MixProject do
       {:dialyxir, "~> 1.0", only: [:dev], runtime: false},
       {:ex_doc, "~> 0.24", only: :dev, runtime: false},
       # Deps
-      {:unifex,  "~> 1.1"}
+      {:unifex,  git: "https://github.com/veliandev/unifex.git"}
     ]
   end
 end
