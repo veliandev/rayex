@@ -35,5 +35,3 @@ rayex-*.tar
 .elixir_ls
 
 .ccls-cache/
-
-/src/raylib
